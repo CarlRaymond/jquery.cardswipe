@@ -105,6 +105,7 @@
 		}
 	};
 
+	// Converts a scancode to a character and appends it to the buffer.
 	var processCode = function (code) {
 		scanbuffer.push(String.fromCharCode(code));
 		//console.log(code);
@@ -165,10 +166,22 @@
 		return rawData;
 	};
 
-	//	var cardParser = function (rawData) {
-	//		var line1pattern = new RegExp("^%[^%;\\?]+\\?");
-	//		var line2pattern = new RegExp(";[0-9\\:<>\\=]+\\?");
-	//	};
+	// Parser that separates raw data into up to three lines
+	var sampleCardParser = function (rawData) {
+		var pattern = new RegExp("^(%[^%;\\?]+\\?)(;[0-9\\:<>\\=]+\\?)?(;[0-9\\:<>\\=]+\\?)?");
+
+		var match = pattern.exec(rawData);
+		if (!match) return null;
+
+		// Extract the three lines
+		var cardData = {
+			line1: match[1],
+			line2: match[2],
+			line3: match[3]
+		};
+
+		return cardData;
+	};
 
 	// Defaults for settings
 	var defaults = {
@@ -176,7 +189,7 @@
 		interdigitTimeout: 250,
 		success: defaultSuccessCallback,
 		error: null,
-		parser: defaultParser,
+		parser: sampleCardParser,
 		firstLineOnly: false
 	};
 
@@ -208,9 +221,11 @@
 		// Method calling logic
 		if (methods[method]) {
 			return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
-		} else if (typeof method === 'object' || !method) {
+		}
+		else if (typeof method === 'object' || !method) {
 			return methods.init.apply(this, arguments);
-		} else {
+		}
+		else {
 			$.error('Method ' + method + ' does not exist on jQuery.cardswipe');
 		}
 	}
