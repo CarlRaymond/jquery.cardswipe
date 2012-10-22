@@ -12,7 +12,7 @@ See <http://en.wikipedia.org/wiki/Magnetic_card> to understand the format of the
 ## What It Does Not Do
 While this plugin can scan a credit card or debit card account number, it does validate or verify that data in any way,
 and cannot by itself process a credit card transaction.  This plugin is not a substitue for a point-of-sale
-terminal or a web- or app-based payment system like Square&#8482 or Intuit&reg; GoPayment.
+terminal or a web- or app-based payment system like Square&#8482; or Intuit&reg; GoPayment.
 Payment card transaction processing requires that careful attention be paid to the security
 isses involved with transmitting and storing payment card information.  Simply put: doing dumb things with credit
 card information could subject you (and definitely not me) to legal action.  Just knock it off.  Same goes
