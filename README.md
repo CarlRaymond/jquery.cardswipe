@@ -1,4 +1,24 @@
-How it works:
+# What It Does
+This jQuery plugin is intended for use with a magnetic card scanner that simulates a keyboard.  It allows a
+web application to interface with the card scanner so that scanning a card will trigger a callback function
+which can then act on the scanned data.
+
+Magnetic cards encode data in up to three tracks.  This expects a card that encodes data on track 1, though
+it also reads tracks 2 and 3.  Most cards use track 1.  This won't recognize cards that don't use track 1,
+or work with a reader that doesn't read track 1.
+
+See <http://en.wikipedia.org/wiki/Magnetic_card> to understand the format of the data on a card.
+
+## What It Does Not Do
+While this plugin can scan a credit card or debit card account number, it does validate or verify that data in any way,
+and cannot by itself process a credit card transaction.  This plugin is not a substitue for a point-of-sale
+terminal or a web- or app-based payment system like Square^tm^ or Intuit&reg; GoPayment.
+Payment card transaction processing requires that careful attention be paid to the security
+isses involved with transmitting and storing payment card information.  Simply put: doing dumb things with credit
+card information could subject you (and definitely not me) to legal action.  Just knock it off.  Same goes
+for driver's licenses or any other government-issued cards.
+
+# How It Works
 The card reader acts like a keyboard, and so causes keydown, keypress, and keyup events when a card is swiped.
 We take advantage of the facts that the scan will begin with a pair of unusual characters, usually %B, which
 is a strange thing to enter on a web page manually, and that the card reader "types" much faster than a human.
