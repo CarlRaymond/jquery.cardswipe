@@ -6,7 +6,7 @@
 // See http://en.wikipedia.org/wiki/Magnetic_card to understand the format of the data on a card.
 //
 // Uses pattern at https://github.com/umdjs/umd/blob/master/jqueryPlugin.js to declare
-// the plugin so that it works with or without RequireJS.
+// the plugin so that it works with or without an AMD-compatible module loader, like RequireJS.
 (function (factory) {
     if (typeof define === 'function' && define.amd) {
         // AMD. Register as an anonymous module.
@@ -31,11 +31,6 @@
 	
 	// Interdigit timer
 	var timerHandle = 0;
-
-	var processCode = function (code) {
-		scanbuffer.push(String.fromCharCode(code));
-		//console.log(code);
-	}
 
 	// Keypress listener
 	var listener = function (e) {
@@ -109,6 +104,11 @@
 				break;
 		}
 	};
+
+	var processCode = function (code) {
+		scanbuffer.push(String.fromCharCode(code));
+		//console.log(code);
+	}
 
 	var startTimer = function () {
 		clearTimeout(timerHandle);
