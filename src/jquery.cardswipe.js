@@ -175,7 +175,7 @@
 
 	// Default callback used if no other specified. Works with default parser.
 	var defaultSuccessCallback = function (cardData) {
-		var text = ['Success!\nFirst name: ', cardData.firstName, '\nLast name: ', cardData.lastName, '\nID number: ', cardData.idNumber].join('');
+		var text = ['Success!\nLine 1: ', cardData.line1, '\nLine 2: ', cardData.line2, '\nLine 3: ', cardData.line3].join('');
 		alert(text);
 	};
 
