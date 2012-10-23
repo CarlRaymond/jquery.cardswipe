@@ -185,7 +185,7 @@
 		interdigitTimeout: 250,
 		success: defaultSuccessCallback,
 		error: null,
-		parser: defaultCardParser,
+		parser: defaultParser,
 		firstLineOnly: false
 	};
 
