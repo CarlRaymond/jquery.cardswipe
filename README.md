@@ -13,10 +13,6 @@ See <http://en.wikipedia.org/wiki/Magnetic_card> to understand the format of the
 While this plugin can scan a credit card or debit card account number, it does not validate or verify that data in any way,
 and cannot by itself process a credit card transaction.  This plugin is not a substitue for a point-of-sale
 terminal or a web- or app-based payment system like Square&#8482; or Intuit&reg; GoPayment.
-Payment card transaction processing requires careful attention to the security
-isses involved with transmitting and storing payment card information.  Simply put: doing dumb things with credit
-card information could subject you (and definitely not me) to legal action.  Same goes for driver's licenses or
-any other government-issued cards.
 
 # How It Works
 The card reader acts like a keyboard, and so causes keydown, keypress, and keyup events when a card is swiped.
