@@ -37,7 +37,7 @@ In the READING state, we just append each incoming character to the buffer, unti
 times out, or we see a carriage return character, which indicates the end of the scan, at least on some card
 readers. As a performance improvement, the client can set the option firstLineOnly to true, and the
 state machine will return the scan after the line 1 ending character.  In this case, the state machine enters
-the DISCARD state to eat all subsequent characters until the end of the scan, where we go back to the IDLE state.
+the DISCARD state to eat all subsequent characters until the end of the scan, when it goes back to the IDLE state.
 
 Because the initial % character is supressed, if you need to manually enter a % character into a form, you
 must type two % characters in quick succession (within the timeout interval).
@@ -59,7 +59,7 @@ Here's a sample page that handles the example format:
 
 	<html>
 	<head>
-		<script type="text/javascript" src="/scripts/jquery.js"></script>
+		<script type="text/javascript" src="/scripts/jquery-1.7.2.js"></script>
 		<script type="text/javascript" src="/scripts/jquery.cardswipe.js"></script>
 		<title>Demo</title>
 	</head>
@@ -72,17 +72,17 @@ Here's a sample page that handles the example format:
 		// Parses raw scan into name and ID number
 		var companyCardParser = function (rawData) {
 
-			var pattern = new RegExp("^%B612345[0-9]{10}\\^([A-Z ]+)\/([A-Z ]+)\\^([A-Z][0-9])+\\?");
+			var pattern = new RegExp("^%B612345[0-9]{10}\\^([A-Z ]+)\/([A-Z ]+)\\^0*([A-Z0-9])+\\?");
 			var match = pattern.exec(rawData);
 			if (!match)
 				return null;
 
-			var companyCard = {
+			var cardData = {
 				firstName: $.trim(match[2]),
 				lastName: $.trim(match[1]),
 				idNumber: match[3]
 			};
-			return companyCard;
+			return cardData;
 		};
 
 		// Called on a good scan (company card recognized)
