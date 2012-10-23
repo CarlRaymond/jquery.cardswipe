@@ -10,20 +10,20 @@ or work with a reader that doesn't read track 1.
 See <http://en.wikipedia.org/wiki/Magnetic_card> to understand the format of the data on a card.
 
 ## What It Does Not Do
-While this plugin can scan a credit card or debit card account number, it does validate or verify that data in any way,
+While this plugin can scan a credit card or debit card account number, it does not validate or verify that data in any way,
 and cannot by itself process a credit card transaction.  This plugin is not a substitue for a point-of-sale
 terminal or a web- or app-based payment system like Square&#8482; or Intuit&reg; GoPayment.
-Payment card transaction processing requires that careful attention be paid to the security
+Payment card transaction processing requires careful attention to the security
 isses involved with transmitting and storing payment card information.  Simply put: doing dumb things with credit
-card information could subject you (and definitely not me) to legal action.  Just knock it off.  Same goes
-for driver's licenses or any other government-issued cards.
+card information could subject you (and definitely not me) to legal action.  Same goes for driver's licenses or
+any other government-issued cards.
 
 # How It Works
 The card reader acts like a keyboard, and so causes keydown, keypress, and keyup events when a card is swiped.
 We take advantage of the facts that the scan will begin with a pair of unusual characters, usually %B, which
 is a strange thing to enter on a web page manually, and that the card reader "types" much faster than a human.
 	
-A simple state machine and timer act on keypress events.  The state machine starts in the IDLE state, waiting
+The plugin uses a simple state machine and timer.  The state machine starts in the IDLE state, waiting
 for a % character, which is the leading character on a swipe.  This changes the state to PENDING, and starts
 the inter-digit timer.  It also stops event propagation, so the % character does not get sent to the control
 with focus on the web page.
