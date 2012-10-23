@@ -156,18 +156,8 @@
 		$(document).unbind(".cardswipe");
 	};
 
-	// Default callback used if no other specified.
-	var defaultSuccessCallback = function (rawData) {
-		alert('Successful scan!\n' + rawData);
-	};
-
-	// Default parser.  Returns its input with no processing.
+	// Default parser. Separates raw data into up to three lines
 	var defaultParser = function (rawData) {
-		return rawData;
-	};
-
-	// Parser that separates raw data into up to three lines
-	var sampleCardParser = function (rawData) {
 		var pattern = new RegExp("^(%[^%;\\?]+\\?)(;[0-9\\:<>\\=]+\\?)?(;[0-9\\:<>\\=]+\\?)?");
 
 		var match = pattern.exec(rawData);
@@ -183,17 +173,23 @@
 		return cardData;
 	};
 
+	// Default callback used if no other specified. Works with default parser.
+	var defaultSuccessCallback = function (cardData) {
+		var text = ['Success!\nFirst name: ', cardData.firstName, '\nLast name: ', cardData.lastName, '\nID number: ', cardData.idNumber].join('');
+		alert(text);
+	};
+
 	// Defaults for settings
 	var defaults = {
 		enabled: true,
 		interdigitTimeout: 250,
 		success: defaultSuccessCallback,
 		error: null,
-		parser: sampleCardParser,
+		parser: defaultCardParser,
 		firstLineOnly: false
 	};
 
-	// Plugin settings
+	// Plugin actual settings
 	var settings;
 
 
