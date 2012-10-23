@@ -46,3 +46,63 @@ On a successful scan, the plugin will invoke the parser function, passing the ra
 parser recognizes the format, it should return an object that encapsulates the data of interest.  Otherwise,
 the parser should return null. Then the plugin will invoke either the success callback, passing it the parsed
 object as a parameter, or it will invoke the error callback.
+
+# How To Use It
+You will need to create a parser function that recognizes the data on the kind of card you're interested in.  For
+example, if you're scanning an employee or student identification card, the data on line 1 may look something like this:
+
+	%B6123450000000000^DOE/JOHN                  ^0000000000000000000ABC123456789?
+
+Your cards of course will be different.  You will need to create a parser function using a regular expression to extract
+the first and last name and the employee or student ID number, or whatever fields you're interested.
+Here's a sample page that handles the example format:
+
+	<html>
+	<head>
+		<script type="text/javascript" src="/scripts/jquery.js"></script>
+		<script type="text/javascript" src="/scripts/jquery.cardswipe.js"></script>
+		<title>Demo</title>
+	</head>
+	<body>
+		<h1>Cardswipe Demo</h1>
+		<p>Plug in your card reader and scan a card.</p>
+
+		<script type="text/javascript">
+
+		// Parses raw scan into name and ID number
+		var companyCardParser = function (rawData) {
+
+			var pattern = new RegExp("^%B612345[0-9]{10}\\^([A-Z ]+)\/([A-Z ]+)\\^([A-Z][0-9])+\\?");
+			var match = pattern.exec(rawData);
+			if (!match)
+				return null;
+
+			var companyCard = {
+				firstName: $.trim(match[2]),
+				lastName: $.trim(match[1]),
+				idNumber: match[3]
+			};
+			return companyCard;
+		};
+
+		// Called on a good scan (company card recognized)
+		var goodScan = function (cardData) {
+			var text = ['Success!\nFirst name: ', cardData.firstName, '\nLast name: ', cardData.lastName, '\nID number: ', cardData.idNumber].join('');
+			alert(text);
+			};
+
+		// Called on a bad scan (company card not recognized)
+		var badScan = function() {
+			alert('Card not recognized.');
+		};
+
+		$.cardswipe({
+			parser: companyCardParser,
+			success: goodScan,
+			error: badScan
+		});
+
+		</script>
+
+
+
