@@ -1,7 +1,8 @@
 # What It Does
 This jQuery plugin is intended for use with a magnetic card scanner that simulates a keyboard.  It allows a
 web application to interface with the card scanner so that scanning a card will trigger a callback function
-which can then act on the scanned data.
+which can then act on the scanned data.  Scanning a card will not result in keyboard events getting through
+to the underlying page, so you can scan a card without regard to which control on the page has focus.
 
 Magnetic cards encode data in up to three tracks.  This expects a card that encodes data on track 1, though
 it also reads tracks 2 and 3.  Most cards use track 1.  This won't recognize cards that don't use track 1,
@@ -16,7 +17,7 @@ terminal or a web- or app-based payment system like Square&#8482; or Intuit&reg;
 
 # How It Works
 The card reader acts like a keyboard, and so causes keydown, keypress, and keyup events when a card is swiped.
-We take advantage of the facts that the scan will begin with a pair of unusual characters, usually %B, which
+We take advantage of the facts that the scan will begin with a pair of unusual characters, usually `%B`, which
 is a strange thing to enter on a web page manually, and that the card reader "types" much faster than a human.
 	
 The plugin uses a simple state machine and timer.  The state machine starts in the IDLE state, waiting
