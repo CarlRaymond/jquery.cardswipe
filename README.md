@@ -48,7 +48,7 @@ object as a parameter, or it will invoke the error callback.
 You will need to create a parser function that recognizes the data on the kind of card you're interested in.  For
 example, if you're scanning an employee or student identification card, the data on line 1 may look something like this:
 
-	%B6123450000000000^DOE/JOHN                  ^0000000000000000000ABC123456789?
+	%B6543210000000000^DOE/JOHN                  ^0000000000000000000ABC123456789?
 
 Your cards of course will be different.  You will need to create a parser function using a regular expression to extract
 the first and last name and the employee or student ID number, or whatever fields you're interested.
@@ -69,6 +69,7 @@ Here's a sample page that handles the example format:
 		// Parses raw scan into name and ID number
 		var companyCardParser = function (rawData) {
 
+			// RegExp to extract the first and last name and ID number from the raw data
 			var pattern = new RegExp("^%B612345[0-9]{10}\\^([A-Z ]+)\/([A-Z ]+)\\^0*([A-Z0-9])+\\?");
 			var match = pattern.exec(rawData);
 			if (!match)
@@ -93,6 +94,7 @@ Here's a sample page that handles the example format:
 			alert('Card not recognized.');
 		};
 
+		// Initialize the plugin.
 		$.cardswipe({
 			parser: companyCardParser,
 			success: goodScan,
