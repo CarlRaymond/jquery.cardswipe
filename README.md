@@ -70,7 +70,7 @@ Here's a sample page that handles the example format:
 		var companyCardParser = function (rawData) {
 
 			// RegExp to extract the first and last name and ID number from the raw data
-			var pattern = new RegExp("^%B612345[0-9]{10}\\^([A-Z ]+)\/([A-Z ]+)\\^0*([A-Z0-9])+\\?");
+			var pattern = new RegExp("^%B654321[0-9]{10}\\^([A-Z ]+)\/([A-Z ]+)\\^0*([A-Z0-9])+\\?");
 			var match = pattern.exec(rawData);
 			if (!match)
 				return null;
