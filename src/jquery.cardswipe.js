@@ -18,13 +18,10 @@
 }(function ($) {
 
 	// State definitions:
-	var IDLE = 0; // Waiting for track 1 start character, %
-	var PENDING = 1; // Saw track 1 start character and waiting for B
-	var READING = 2; // Saw %B and capturing until a carriage return, or until the timer times out
-	var DISCARD = 3; // Eating all characters until a carriage return, or until the timer lapses
+	var states = { IDLE: 0, PENDING: 1, READING: 2, DISCARD: 3 };
 
 	// Holds current state
-	var state = IDLE;
+	var state = states.IDLE;
 
 	// Array holding scanned characters
 	var scanbuffer;
@@ -35,10 +32,10 @@
 	// Keypress listener
 	var listener = function (e) {
 		switch (state) {
-			case IDLE:
+			case states.IDLE:
 				// Look for '%'
 				if (e.which == 37) {
-					state = PENDING;
+					state = states.PENDING;
 					scanbuffer = new Array();
 					processCode(e.which);
 					e.preventDefault();
@@ -48,11 +45,11 @@
 
 				break;
 
-			case PENDING:
+			case states.PENDING:
 				// Look for format code character, A-Z. Almost always B for cards
 				// used by the general public.
 				if (e.which >= 65 && e.which <= 90) {
-					state = READING;
+					state = states.READING;
 
 					// Leaving focus on a form element wreaks browser-dependent
 					// havoc because of keyup and keydown events.  This is a
@@ -67,11 +64,11 @@
 				else {
 					clearTimer();
 					scanbuffer = null;
-					state = IDLE;
+					state = states.IDLE;
 				}
 				break;
 
-			case READING:
+			case states.READING:
 				processCode(e.which);
 				startTimer();
 				e.preventDefault();
@@ -80,23 +77,23 @@
 				// Carriage return indicates end of scan
 				if (e.which == 13) {
 					clearTimer();
-					state = IDLE;
+					state = states.IDLE;
 					processScan();
 				}
 
 				if (settings.firstLineOnly && e.which == 63) {
 					// End of line 1.  Return early, and eat remaining characters.
-					state = DISCARD;
+					state = states.DISCARD;
 					processScan();
 				}
 				break;
 
-			case DISCARD:
+			case states.DISCARD:
 				e.preventDefault();
 				e.stopPropagation();
 				if (e.which == 13) {
 					clearTimer();
-					state = IDLE;
+					state = states.IDLE;
 					return;
 				}
 
@@ -123,11 +120,11 @@
 
 	// Invoked when the timer lapses.
 	var onTimeout = function () {
-		if (state == READING) {
+		if (state == states.READING) {
 			processScan();
 		}
 		scanbuffer = null;
-		state = IDLE;
+		state = states.IDLE;
 	};
 
 
