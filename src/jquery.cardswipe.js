@@ -17,14 +17,11 @@
     }
 }(function ($) {
 
-	// State definitions:
-	var IDLE = 0; // Waiting for track 1 start character, %
-	var PENDING = 1; // Saw track 1 start character and waiting for B
-	var READING = 2; // Saw %B and capturing until a carriage return, or until the timer times out
-	var DISCARD = 3; // Eating all characters until a carriage return, or until the timer lapses
+  // State definitions:
+  var states = { IDLE: 0, PENDING: 1, READING: 2, DISCARD: 3 };
 
 	// Holds current state
-	var state = IDLE;
+	var state = states.IDLE;
 
 	// Array holding scanned characters
 	var scanbuffer;
@@ -35,10 +32,10 @@
 	// Keypress listener
 	var listener = function (e) {
 		switch (state) {
-			case IDLE:
+			case states.IDLE:
 				// Look for '%'
 				if (e.which == 37) {
-					state = PENDING;
+					state = states.PENDING;
 					scanbuffer = new Array();
 					processCode(e.which);
 					e.preventDefault();
@@ -48,11 +45,11 @@
 
 				break;
 
-			case PENDING:
+			case states.PENDING:
 				// Look for format code character, A-Z. Almost always B for cards
 				// used by the general public.
 				if (e.which >= 65 && e.which <= 90) {
-					state = READING;
+					state = states.READING;
 
 					// Leaving focus on a form element wreaks browser-dependent
 					// havoc because of keyup and keydown events.  This is a
@@ -62,16 +59,19 @@
 					processCode(e.which);
 					e.preventDefault();
 					e.stopPropagation();
+
+					$(document).trigger("scanbegin.cardswipe");
+
 					startTimer();
 				}
 				else {
 					clearTimer();
 					scanbuffer = null;
-					state = IDLE;
+					state = states.IDLE;
 				}
 				break;
 
-			case READING:
+			case states.READING:
 				processCode(e.which);
 				startTimer();
 				e.preventDefault();
@@ -81,22 +81,28 @@
 				if (e.which == 13) {
 					clearTimer();
 					state = IDLE;
+
+					$(document).trigger("scanend.cardswipe");
+
 					processScan();
 				}
 
 				if (settings.firstLineOnly && e.which == 63) {
 					// End of line 1.  Return early, and eat remaining characters.
-					state = DISCARD;
+				  state = states.DISCARD;
+
+				  $(document).trigger("scanend.cardswipe");
+
 					processScan();
 				}
 				break;
 
-			case DISCARD:
+			case states.DISCARD:
 				e.preventDefault();
 				e.stopPropagation();
 				if (e.which == 13) {
 					clearTimer();
-					state = IDLE;
+					state = states.IDLE;
 					return;
 				}
 
@@ -123,11 +129,11 @@
 
 	// Invoked when the timer lapses.
 	var onTimeout = function () {
-		if (state == READING) {
-			processScan();
+		if (state == states.READING) {
+			procsessScan();
 		}
 		scanbuffer = null;
-		state = IDLE;
+		state = states.IDLE;
 	};
 
 
@@ -136,35 +142,55 @@
 
 		var rawData = scanbuffer.join('');
 
-		// Invoke client parser and callbacks
-		var parsedData = settings.parser.call(this, rawData);
-		if (parsedData) {
-			settings.success && settings.success.call(this, parsedData);
+	    // Invoke client parsers until one succeeds
+		for (var i = 0; i < settings.parsers.length; i++) {
+		  var ref = settings.parsers[i];
+		  var parser;
+
+      // ref is a function or the name of a builtin parser
+		  if ($.isFunction(ref)) {
+		    parser = ref;
+		  }
+		  else if (typeof (ref) === "string") {
+		    parser = builtinParsers[ref];
+		  }
+
+		  if (parser != null)
+		  {
+		    var parsedData = parser.call(this, rawData);
+		    if (parsedData == null)
+		      continue;
+
+		    // Success. Raise event.
+		    $(document).trigger("success.cardswipe", parsedData);
+		    return;
+		  }
 		}
-		else {
-			settings.error && settings.error.call(this, rawData);
-		}
+
+	  // All parsers failed.
+		$(document).trigger("failure.cardswipe");
 	};
 
 	// Binds the event listener
 	var bindListener = function () {
-		$(document).bind("keypress.cardswipe", listener);
+		$(document).bind("keypress", listener);
 	};
 
 	// Unbinds the event listener
 	var unbindListener = function () {
-		$(document).unbind(".cardswipe");
+		$(document).unbind("keypress", listener);
 	};
 
 	// Default parser. Separates raw data into up to three lines
 	var defaultParser = function (rawData) {
-		var pattern = new RegExp("^(%[^%;\\?]+\\?)(;[0-9\\:<>\\=]+\\?)?(;[0-9\\:<>\\=]+\\?)?");
+		var pattern = new RegExp("^(%[^%;\\?]+\\?)?(;[0-9\\:<>\\=]+\\?)?(;[0-9\\:<>\\=]+\\?)?");
 
 		var match = pattern.exec(rawData);
 		if (!match) return null;
 
 		// Extract the three lines
 		var cardData = {
+      type: "generic",
 			line1: match[1],
 			line2: match[2],
 			line3: match[3]
@@ -172,6 +198,30 @@
 
 		return cardData;
 	};
+
+	var visaParser = function (rawData) {
+	  var pattern = new RegExp("^%B([0-9]{16,19})\\^([A-Z ]+)/([A-Z ]+)\\^([0-9]{2})([0-9]{2})");
+
+	  var match = pattern.exec(rawData);
+	  if (!match) return null;
+
+	  var cardData = {
+      type: "visa",
+	    account: match[1],
+	    lastName: match[2],
+	    firstName: match[3],
+	    expYear: match[4],
+	    expMonth: match[5]
+	  };
+
+	  return cardData;
+	};
+
+	var amexParser = function (rawData) {
+	  return null;
+	};
+
+	var builtinParsers = { "default": defaultParser, "visa": visaParser, "amex": amexParser };
 
 	// Default callback used if no other specified. Works with default parser.
 	var defaultSuccessCallback = function (cardData) {
@@ -185,7 +235,7 @@
 		interdigitTimeout: 250,
 		success: defaultSuccessCallback,
 		error: null,
-		parser: defaultParser,
+		parsers: [ "visa", "amex" ],
 		firstLineOnly: false
 	};
 
