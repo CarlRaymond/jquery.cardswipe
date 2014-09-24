@@ -212,14 +212,16 @@
 	// The extension proper.  Dispatches methods using the usual jQuery pattern.
 	$.cardswipe = function (method) {
 		// Method calling logic
+		// If named method exists, execute it with passed arguments
 		if (methods[method]) {
 			return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
 		}
+		// If no argument, or an object passed, invoke init method.
 		else if (typeof method === 'object' || !method) {
 			return methods.init.apply(this, arguments);
 		}
 		else {
-			$.error('Method ' + method + ' does not exist on jQuery.cardswipe');
+			throw 'Method ' + method + ' does not exist on jQuery.cardswipe';
 		}
 	}
 
