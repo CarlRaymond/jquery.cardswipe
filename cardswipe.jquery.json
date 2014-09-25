@@ -1,0 +1,22 @@
+﻿{
+	"name": "CardSwipe",
+	"version": "0.1.1",
+	"title": "jQuery.CardSwipe Magnetic Card Reader",
+	"author": {
+		"name": "Carl J. Raymond",
+		"email": "carl@orcharddev.com",
+		"url": "https://github.com/CarlRaymond"
+		},
+	"description": "Allows a web application to read magnetic cards using common card readers that simulate a keyboard.",
+	"keywords": [ "magnetic", "card", "reader", "magstripe", "credit", "payment" ],
+  "dependencies": {
+			"jquery": ">=1.6"
+    },
+	"homepage": "https://github.com/CarlRaymond/jquery.cardswipe",
+	"licenses":  [
+		{
+			"type":  "GPLv2",
+			"url":  "http://opensource.org/licenses/GPL-2.0"
+		}
+	]
+}
