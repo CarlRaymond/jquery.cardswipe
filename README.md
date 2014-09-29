@@ -58,6 +58,7 @@ For example, for the data above the parser could return the following object:
     };
 
 If you're only expecting and accepting one format for the data, the `type` property is unnecessary.
+
 When the scanned data does not match your expected format, your parser should return null. This will cause the plugin
 to invoke the error callback you have defined, if any.
 
