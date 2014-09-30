@@ -195,6 +195,10 @@
 	// Processes the scanned card
 	var processScan = function () {
 
+		if (settings.debug) {
+			console.log(scanbuffer);
+		}
+
 		var rawData = scanbuffer.join('');
 
 		// Invoke client parser and callbacks
