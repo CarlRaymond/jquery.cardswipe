@@ -62,57 +62,16 @@ If you're only expecting and accepting one format for the data, the `type` prope
 When the scanned data does not match your expected format, your parser should return null. This will cause the plugin
 to invoke the error callback you have defined, if any.
 
-Here's a sample page that handles the example format.
 
-	<html>
-	<head>
-		<script type="text/javascript" src="/scripts/jquery-1.7.2.js"></script>
-		<script type="text/javascript" src="/scripts/jquery.cardswipe.js"></script>
-		<title>Demo</title>
-	</head>
-	<body>
-		<h1>Cardswipe Demo</h1>
-		<p>Plug in your card reader and scan a card.</p>
+# Sample Page
 
-		<script type="text/javascript">
+The file [demo.html](demo.html) shows an example of using the plugin with the default parser.
 
-		// Parses raw scan into name and ID number
-		var companyCardParser = function (rawData) {
-
-			// RegExp to extract the first and last name and ID number from the raw data
-			var pattern = new RegExp("^%B654321[0-9]{10}\\^([A-Z ]+)\/([A-Z ]+)\\^0*([A-Z0-9])+\\?");
-			var match = pattern.exec(rawData);
-			if (!match)
-				return null;
-
-			var cardData = {
-				type: 'Example Corp ID Card',
-				firstName: $.trim(match[2]),
-				lastName: $.trim(match[1]),
-				idNumber: match[3]
-			};
-			return cardData;
-		};
-
-		// Called on a good scan (company card recognized)
-		var goodScan = function (cardData) {
-			var text = ['Success!\nFirst name: ', cardData.firstName, '\nLast name: ', cardData.lastName, '\nID number: ', cardData.idNumber].join('');
-			alert(text);
-			};
-
-		// Called on a bad scan (company card not recognized)
-		var badScan = function() {
-			alert('Card not recognized.');
-		};
-
-		// Initialize the plugin.
-		$.cardswipe({
-			parser: companyCardParser,
-			success: goodScan,
-			error: badScan
-		});
-
-		</script>
+If you have trouble using your scanner and cards with the sample page, try scanning a card into a
+plain-text editor like `vi` or `notepad`.  If the scanned data does not start with a `%` followed by
+a letter, this plugin will not be able to work with your cards and reader.  However, if the `%`
+and a letter are present, but there is a prefix ahead of it, you may be able to use the plugin by
+configuring the `prefixCharacter` property.  See an example below.
 
 
 
