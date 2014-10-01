@@ -1,0 +1,88 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset="utf-8" />
+	<title>Cardswipe Events Demonstration</title>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+	<script type="text/javascript" src="src/jquery.cardswipe.js"></script>
+	<link rel="stylesheet" type="text/css" href="events.css" />
+</head>
+<body>
+	<div id="pagecontent">
+		<h1>Cardswipe Events Demo</h1>
+		<p><strong>Plug in your card reader and scan a card.</strong> This page uses the built-in card data parsers, which recognize various formats.</p>
+
+		<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum libero est, mollis sed est sed, suscipit interdum lacus. Suspendisse potenti. Morbi mattis, orci vel rutrum bibendum, sem dui tristique purus, non vehicula ligula ex varius ligula. Suspendisse malesuada augue vitae sem blandit ornare. Nullam pharetra dictum ipsum a placerat. Curabitur accumsan mauris et porta commodo. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Integer et dui tellus. Mauris ac ornare nulla. Proin nec ullamcorper tortor. Sed ultricies facilisis mauris. Curabitur imperdiet rutrum porttitor. Nulla id ipsum tristique massa cursus molestie. Praesent pharetra, leo ut aliquam ultrices, lectus dui dignissim quam, ut hendrerit lorem est eget tellus. Suspendisse vel scelerisque ipsum. Suspendisse porttitor, lectus tincidunt condimentum ultrices, lectus nunc condimentum mauris, eget faucibus lacus lorem a mi.</p>
+
+		<p>Integer feugiat risus risus, at sagittis mauris posuere sed. Aenean elementum nisl quis tortor feugiat ornare. Cras sit amet ultrices ipsum, ac congue ex. Nam placerat pellentesque turpis viverra sagittis. Maecenas placerat cursus facilisis. Nunc sed sem a mi gravida porta et ultrices dui. Phasellus convallis ullamcorper sem, tempor tempus sem rhoncus sed.</p>
+
+		<p>Sed eget rutrum eros. Nunc nibh lacus, blandit dignissim ipsum a, facilisis pharetra metus. Vivamus nibh tellus, porta vitae elit id, pulvinar commodo leo. Vestibulum dui lectus, venenatis malesuada nibh ut, ornare volutpat arcu. Fusce justo tortor, ornare a imperdiet ac, scelerisque nec risus. Nulla id porttitor metus. Proin ut enim in ligula porttitor ullamcorper eget non felis. Cras venenatis feugiat gravida. Mauris ultricies mauris et ante commodo, vel vehicula ligula hendrerit. In leo tellus, viverra eu felis eu, hendrerit iaculis eros. Aliquam gravida mi eget metus luctus euismod. Nam ullamcorper sapien nibh, sed placerat nunc elementum at. Curabitur sit amet leo ante. Maecenas congue risus id lacus rutrum, et mollis eros rutrum. Phasellus nec ante est.</p>
+
+		<p>Nam et aliquet arcu. Cras scelerisque efficitur nulla et volutpat. Nulla facilisi. Duis malesuada ut nibh a convallis. Sed sed velit fringilla, volutpat elit sed, dignissim neque. Praesent ut felis fermentum, gravida nisi ultrices, vulputate purus. Integer accumsan augue sapien, vitae euismod nibh lobortis sit amet. Duis vitae elit ultrices enim vestibulum egestas. Ut vel urna elementum, sollicitudin nulla ac, iaculis quam.</p>
+
+		<p>Morbi porttitor erat sed lorem tempor egestas. Nunc a nunc aliquam, euismod neque eu, finibus enim. Cras arcu nulla, cursus eu libero eget, consectetur convallis erat. Suspendisse mollis neque vel eros porttitor, a gravida nulla porta. Nullam placerat, neque sit amet lobortis porttitor, tortor ipsum efficitur nunc, ac vehicula nibh tortor in neque. Mauris vel dui pellentesque, mollis lacus ut, sollicitudin odio. Morbi neque nibh, lacinia vitae lectus nec, dapibus interdum augue. Curabitur volutpat nunc tincidunt, vehicula elit eu, mollis est. Nam ut laoreet enim. Donec a porta felis. Ut eu nulla in quam mollis lobortis. Maecenas feugiat tellus eros, sed rhoncus metus scelerisque eget. Quisque a dolor vitae augue sollicitudin finibus in non dolor. Integer rhoncus nisi sit amet elit fermentum, et ultrices mauris pretium. Vestibulum varius tincidunt dolor, non molestie dolor luctus a.</p>
+	</div>
+
+	<div id="card">
+		<div id="type"></div>
+		<ul id="properties"></ul>
+	</div>
+	
+	<script type="text/javascript">
+
+		var success = function (data) {
+			$("#status").text("Success!");
+
+			$("#properties").empty();
+
+			$("#type").text(data.type);
+			// Iterate properties of parsed data
+			for (var key in data) {
+				if (key != 'type' && data.hasOwnProperty(key)) {
+					var text = key + ': ' + data[key];
+					$("#properties").append('<li class="data">' + text + '</li>');
+				}
+			}
+		};
+
+		var error = function () {
+			$("#status").text("Failed!");
+			$(".line").text("");
+		};
+
+		var scanstart = function () {
+			$("#type").text("Scanning...");
+
+			$("#pagecontent").addClass("scanning");
+		};
+
+		var scanend = function () {
+			$("#pagecontent").removeClass("scanning");
+		};
+
+		// Initialize the plugin with default parser and callbacks.
+		//
+		// Set debug to true to watch the characters get captured and the state machine transitions
+		// in the javascript console. This requires a browser that supports the console.log function.
+		//
+		// Set firstLineOnly to true to invoke the parser after scanning the first line. This will speed up the
+		// time from the start of the scan to invoking your success callback.
+		$.cardswipe({
+			firstLineOnly: false,
+			success: success,
+			parsers: ["visa", "amex", "mastercard", "generic"],
+			error: error,
+			debug: false
+		});
+
+		// Bind event listeners to the document
+		$(document)
+			.bind("scanstart.cardswipe", scanstart)
+			.bind("scanend.cardswipe", scanend)
+		;
+
+	</script>
+</body>
+
+</html>

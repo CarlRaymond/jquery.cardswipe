@@ -1,0 +1,60 @@
+﻿.border-radius(@radius) {
+  -webkit-border-radius: @radius;
+     -moz-border-radius: @radius;
+          border-radius: @radius;
+}
+
+.transform(...) {
+  -webkit-transform: @arguments;
+  -moz-transform: @arguments;
+  -o-transform: @arguments;
+  -ms-transform: @arguments;
+  transform: @arguments;
+}
+
+.transition(@duration:0.2s, @ease:ease-out) {
+  -webkit-transition: all @duration @ease;
+  -moz-transition: all @duration @ease;
+  -o-transition: all @duration @ease;
+  transition: all @duration @ease;
+}
+
+#pagecontent.scanning {
+		-webkit-filter: blur(1px) grayscale(50%);
+		.transform(scale: 0.9);
+}
+
+.data {
+	font-family: "Lucida Console", Monaco, monospace;
+	font-size: 80%;
+}
+
+#card {
+	transform: scale(1.5);
+	opacity: 0;
+
+	position: absolute;
+	border: 3px solid black;
+	height: 162px;
+	width: 258px;
+	padding: 20px;
+	z-index: 1000;
+	.border-radius(9px);
+
+	&.scanning {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
+#pagecontent, #card {
+	.transition(all; 0.2s; ease);
+}
+
+#type {
+	font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+	font-size: 150%;
+	font-weight: bold;
+	width: auto;
+	text-align: center;
+}

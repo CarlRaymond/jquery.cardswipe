@@ -17,7 +17,27 @@
     }
 }(function ($) {
 
-	// Built-in parsers
+
+	// The plugin proper.  Dispatches methods using the usual jQuery pattern.
+	$.cardswipe = function (method) {
+		// Method calling logic. If named method exists, execute it with passed arguments
+		if (methods[method]) {
+			return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
+		}
+			// If no argument, or an object passed, invoke init method.
+		else if (typeof method === 'object' || !method) {
+			return methods.init.apply(this, arguments);
+		}
+		else {
+			throw 'Method ' + method + ' does not exist on jQuery.cardswipe';
+		}
+	}
+
+
+	// Built-in parsers. These include simplistic credit card parsers that
+	// recognize various card issuers based on patterns of the account number.
+	// There is no guarantee these are correct or complete.
+	// Account numbers are validated by the Luhn checksum algorithm.
 	var builtinParsers = {
 
 		// Generic parser. Separates raw data into up to three lines
@@ -39,17 +59,45 @@
 			},
 		
 
-		// VISA card parser.
+		// Visa card parser.
 		visa: function (rawData) {
-			// VISA issuer number begins with 4 and may vary from 13 to 19 total digits. 16 digits is most common.
+			// Visa issuer number begins with 4 and may vary from 13 to 19 total digits. 16 digits is most common.
 			var pattern = new RegExp("^%B(4[0-9]{12,18})\\^([A-Z ]+)/([A-Z ]+)\\^([0-9]{2})([0-9]{2})");
 
 			var match = pattern.exec(rawData);
 			if (!match) return null;
 
+			var account = match[1];
+			if (!luhnCheck(account))
+				return null;
+
 			var cardData = {
 				type: "visa",
-				account: match[1],
+				account: account,
+				lastName: match[2].trim(),
+				firstName: match[3].trim(),
+				expYear: match[4],
+				expMonth: match[5]
+			};
+
+			return cardData;
+		},
+
+		// MasterCard parser.
+		mastercard: function (rawData) {
+			// MasterCard starts with 51-55, and is 16 digits long.
+			var pattern = new RegExp("^%B(5[1-5][0-9]{14})\\^([A-Z ]+)/([A-Z ]+)\\^([0-9]{2})([0-9]{2})");
+
+			var match = pattern.exec(rawData);
+			if (!match) return null;
+
+			var account = match[1];
+			if (!luhnCheck(account))
+				return null;
+
+			var cardData = {
+				type: "mastercard",
+				account: account,
 				lastName: match[2],
 				firstName: match[3],
 				expYear: match[4],
@@ -59,7 +107,29 @@
 			return cardData;
 		},
 
+		// American Express parser
+		amex: function (rawData) {
+			// American Express starts with 34 or 37, and is 15 digits long.  According to Wikipedia.
+			var pattern = new RegExp("^%B(3[4|7][0-9]{13})\\^([A-Z ]+)/([A-Z ]+)\\^([0-9]{2})([0-9]{2})");
 
+			var match = pattern.exec(rawData);
+			if (!match) return null;
+
+			var account = match[1];
+			if (!luhnCheck(account))
+				return null;
+
+			var cardData = {
+				type: "amex",
+				account: account,
+				lastName: match[2],
+				firstName: match[3],
+				expYear: match[4],
+				expMonth: match[5]
+			};
+
+			return cardData;
+		},
 	};
 
 
@@ -87,9 +157,12 @@
 				console.log("%s -> %s", stateNames[currentState], stateNames[newState]);
 			}
 
-			if (settings.debugElement) {
-				settings.debugElement.append(stateNames[currentState] + ' -> ' + stateNames[newState]);
-			}
+			// Raise events when entering and leaving the READING state
+			if (newState == states.READING)
+				$(document).trigger("scanstart.cardswipe");
+
+			if (currentState == states.READING)
+				$(document).trigger("scanend.cardswipe");
 
 			currentState = newState;
 		}
@@ -148,9 +221,6 @@
 					processCode(e.which);
 					e.preventDefault();
 					e.stopPropagation();
-
-					$(document).trigger("scanbegin.cardswipe");
-
 					startTimer();
 				}
 				else {
@@ -171,18 +241,12 @@
 				if (e.which == 13) {
 					clearTimer();
 					state(states.IDLE);
-
-					$(document).trigger("scanend.cardswipe");
-
 					processScan();
 				}
 
 				if (settings.firstLineOnly && e.which == 63) {
 					// End of line 1.  Return early, and eat remaining characters.
 				  state(states.DISCARD);
-
-				  $(document).trigger("scanend.cardswipe");
-
 				  processScan();
 				}
 				break;
@@ -289,7 +353,7 @@
 		// All parsers failed.
 
 		settings.error && settings.error.call(this, rawData);
-		$(document).trigger("failure.cardswipe");
+		$(document).trigger("error.cardswipe");
 	};
 
 	// Binds the event listener
@@ -332,7 +396,7 @@
 			// Is a prefix character defined?
 			if (settings.prefixCharacter) {
 				if (settings.prefixCharacter.length != 1)
-					throw 'PrefixCharacter must be  a single character';
+					throw 'PrefixCharacter must be a single character';
 
 				// Convert to character code
 				settings.prefixCode = settings.prefixCharacter.charCodeAt(0);
@@ -351,28 +415,31 @@
 		}
 	};
 
+	// Apply the Luhn checksum test.  Returns true on a valid account number.
+	// The input is assumed to be a string containing only digits.
+	var luhnCheck = function (digits) {
+		var map = [0, 2, 4, 6, 8, 1, 3, 5, 7, 9];
+		var sum = 0;
 
-	// The extension proper.  Dispatches methods using the usual jQuery pattern.
-	$.cardswipe = function (method) {
-		// Method calling logic. If named method exists, execute it with passed arguments
-		if (methods[method]) {
-			return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
+		// Proceed right to left. Even and odd digits are handled differently.
+		var n = digits.length;
+		var odd = true;
+		while (n--) {
+			var d = parseInt(digits.charAt(n), 10);
+			if (odd) {
+				// Odd digits used as is
+				sum += d;
+			}
+			else {
+				// Even digits mapped
+				sum += map[d];
+			}
+
+			odd = !odd;
 		}
-		// If no argument, or an object passed, invoke init method.
-		else if (typeof method === 'object' || !method) {
-			return methods.init.apply(this, arguments);
-		}
-		else {
-			throw 'Method ' + method + ' does not exist on jQuery.cardswipe';
-		}
-	}
 
-
-	//////////////////////////////////////////////////////////////////////////////
-	// Utility functions available to the plugin and client code.
-	// These are not methods.
-	//////////////////////////////////////////////////////////////////////////////
-
+		return sum % 10 == 0 && sum > 0;
+	};
 
 
 }));

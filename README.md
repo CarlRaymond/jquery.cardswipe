@@ -13,7 +13,8 @@ Magnetic cards encode data in up to three tracks.  This expects a card that enco
 it also reads tracks 2 and 3.  Most cards use track 1.  This won't recognize cards that don't use track 1,
 or work with a reader that doesn't read track 1.
 
-See <http://en.wikipedia.org/wiki/Magnetic_card> to understand the format of the data on a card.
+See <http://en.wikipedia.org/wiki/Magnetic_card> to understand the format of the data on a card. For details of
+the format of bank card numbers, see <http://en.wikipedia.org/wiki/Bank_card_number>.
 
 The data fileds on a line are typically separated by carets, and padded with spaces. Lines are separated by question marks,
 and the end of a scan is indicated by a carriage return character. Note that the exact format could vary between various
@@ -40,18 +41,19 @@ encoding. Only the first line will contain alphabetic characters; the other line
 number of punctuation characters.
 
 # How To Use It
-The code example below is for the sample data format above. Your cards of course will be different.
-Scan several examples into a plain text editor to see how the data is encoded.
+If you are scanning credit cards like Visa, MasterCard, or American Express, there are built-in parsers within
+the plugin that can recognize those formats. A built-in generic parser will parse up to three lines of data.
 
-You will need to create a parser function to extract the first and last name and the employee or student ID number,
-or whatever fields you're interested in. Typically you'll use a regular expression for this. On a successful scan,
+If you are scanning a privately-issued employee or student ID card or the like, you will need to create your own
+parser function to extract the various data fields you are interested in.
+Typically you'll use a regular expression for this. On a successful scan,
 your parser should return a object with a property for each field of interest.  This will cause the plugin to invoke
 the successful scan callback, passing it the object.
 
 For example, for the data above the parser could return the following object:
 
     {
-      type: 'Example Corp ID Card',
+      type: 'examplecorp',
       firstName: 'JOHN',
       lastName: 'DOE',
       idNumber: 'ABC123456789'
@@ -61,6 +63,13 @@ If you're only expecting and accepting one format for the data, the `type` prope
 
 When the scanned data does not match your expected format, your parser should return null. This will cause the plugin
 to invoke the error callback you have defined, if any.
+
+The plugin can be configured to try several different parsers in sequence, so that your application can recognize
+differnt cards and act accordingly.
+
+The code example below is for the sample data format above. Your cards of course will be different.
+Scan several examples into a plain text editor to see how the data is encoded.
+
 
 
 # Sample Page
@@ -111,10 +120,10 @@ until a % character is seen, where we enter the PENDING state and proceed as bef
 in the initial configuration with the `prefixCharacter` property.  For example the prefix for the Scriptel is `!`:
 
 		$.cardswipe({
-			parser: companyCardParser,
+			parsers: ["visa", "amex", "mastercard", companyCardParser],
 			success: goodScan,
 			error: badScan,
-			firstLineOnly: true,
+			firstLineOnly: false,
 			prefixCharacter: '!' });
 
 When a prefix character is defined, in order to enter it manually into a form field, you will have to enter it twice

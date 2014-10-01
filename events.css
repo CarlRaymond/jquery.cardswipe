@@ -1,0 +1,40 @@
+﻿#pagecontent.scanning {
+  -webkit-filter: blur(3px) grayscale(50%);
+  -webkit-transform: scale(0.9);
+}
+.data {
+  font-family: "Lucida Console", Monaco, monospace;
+  font-size: 80%;
+}
+#card {
+  transform: scale(1.5);
+  opacity: 0;
+  position: absolute;
+  border: 3px solid black;
+  height: 162px;
+  width: 258px;
+  padding: 20px;
+  z-index: 1000;
+  -webkit-border-radius: 9px;
+  -moz-border-radius: 9px;
+  border-radius: 9px;
+}
+#card.scanning {
+  transform: scale(1);
+  opacity: 1;
+}
+#pagecontent,
+#card {
+  -webkit-transition: all 0.2s ease;
+  -moz-transition: all 0.2s ease;
+  -o-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+}
+#type {
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  font-size: 150%;
+  font-weight: bold;
+  width: auto;
+  text-align: center;
+}
+/*# sourceMappingURL=events.css.map */
