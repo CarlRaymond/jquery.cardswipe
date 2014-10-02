@@ -11,55 +11,102 @@
 <body>
 	<div id="pagecontent">
 		<h1>Cardswipe Events Demo</h1>
-		<p><strong>Plug in your card reader and scan a card.</strong> This page uses the built-in card data parsers, which recognize various formats.</p>
+		<p>
+			<strong>Plug in your card reader and scan a card.</strong> This page uses the built-in card data parsers, which recognize various formats.
+			If you scan a payment card, the form fields will be filled in with data from the card.
+			The page subscribes to the plugin's custom events to update the user interface while a scan is in progress.
+		</p>
 
-		<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum libero est, mollis sed est sed, suscipit interdum lacus. Suspendisse potenti. Morbi mattis, orci vel rutrum bibendum, sem dui tristique purus, non vehicula ligula ex varius ligula. Suspendisse malesuada augue vitae sem blandit ornare. Nullam pharetra dictum ipsum a placerat. Curabitur accumsan mauris et porta commodo. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Integer et dui tellus. Mauris ac ornare nulla. Proin nec ullamcorper tortor. Sed ultricies facilisis mauris. Curabitur imperdiet rutrum porttitor. Nulla id ipsum tristique massa cursus molestie. Praesent pharetra, leo ut aliquam ultrices, lectus dui dignissim quam, ut hendrerit lorem est eget tellus. Suspendisse vel scelerisque ipsum. Suspendisse porttitor, lectus tincidunt condimentum ultrices, lectus nunc condimentum mauris, eget faucibus lacus lorem a mi.</p>
+		
+		<form>
+			<ul>
+				<li><label>First name: <input type="text" name="firstName" id="firstName" /></label></li>
+				<li><label>Last name: <input type="text" name="lastName" id="lastName" /></label></li>
+				<li><label>Card type: <select name="type" id="type">
+					<option value="">(Select card type)</option>
+					<option value="amex">American Express</option>
+					<option value="visa">Visa</option>
+					<option value="mastercard">MasterCard</option>
+					</select></label></li>
+				<li><label>Card number: <input type="text" name="account" id="account" /></label></li>
+				<li>
+					Expiration date:
+					<label>Month: <input type="text" name="expMonth" id="expMonth" size="2" /></label>
+					<label>Year: <input type="text" name="expYear" id="expYear" size="2" /></label>
+				</li>
+			</ul>
+		</form>
 
-		<p>Integer feugiat risus risus, at sagittis mauris posuere sed. Aenean elementum nisl quis tortor feugiat ornare. Cras sit amet ultrices ipsum, ac congue ex. Nam placerat pellentesque turpis viverra sagittis. Maecenas placerat cursus facilisis. Nunc sed sem a mi gravida porta et ultrices dui. Phasellus convallis ullamcorper sem, tempor tempus sem rhoncus sed.</p>
-
-		<p>Sed eget rutrum eros. Nunc nibh lacus, blandit dignissim ipsum a, facilisis pharetra metus. Vivamus nibh tellus, porta vitae elit id, pulvinar commodo leo. Vestibulum dui lectus, venenatis malesuada nibh ut, ornare volutpat arcu. Fusce justo tortor, ornare a imperdiet ac, scelerisque nec risus. Nulla id porttitor metus. Proin ut enim in ligula porttitor ullamcorper eget non felis. Cras venenatis feugiat gravida. Mauris ultricies mauris et ante commodo, vel vehicula ligula hendrerit. In leo tellus, viverra eu felis eu, hendrerit iaculis eros. Aliquam gravida mi eget metus luctus euismod. Nam ullamcorper sapien nibh, sed placerat nunc elementum at. Curabitur sit amet leo ante. Maecenas congue risus id lacus rutrum, et mollis eros rutrum. Phasellus nec ante est.</p>
-
-		<p>Nam et aliquet arcu. Cras scelerisque efficitur nulla et volutpat. Nulla facilisi. Duis malesuada ut nibh a convallis. Sed sed velit fringilla, volutpat elit sed, dignissim neque. Praesent ut felis fermentum, gravida nisi ultrices, vulputate purus. Integer accumsan augue sapien, vitae euismod nibh lobortis sit amet. Duis vitae elit ultrices enim vestibulum egestas. Ut vel urna elementum, sollicitudin nulla ac, iaculis quam.</p>
-
-		<p>Morbi porttitor erat sed lorem tempor egestas. Nunc a nunc aliquam, euismod neque eu, finibus enim. Cras arcu nulla, cursus eu libero eget, consectetur convallis erat. Suspendisse mollis neque vel eros porttitor, a gravida nulla porta. Nullam placerat, neque sit amet lobortis porttitor, tortor ipsum efficitur nunc, ac vehicula nibh tortor in neque. Mauris vel dui pellentesque, mollis lacus ut, sollicitudin odio. Morbi neque nibh, lacinia vitae lectus nec, dapibus interdum augue. Curabitur volutpat nunc tincidunt, vehicula elit eu, mollis est. Nam ut laoreet enim. Donec a porta felis. Ut eu nulla in quam mollis lobortis. Maecenas feugiat tellus eros, sed rhoncus metus scelerisque eget. Quisque a dolor vitae augue sollicitudin finibus in non dolor. Integer rhoncus nisi sit amet elit fermentum, et ultrices mauris pretium. Vestibulum varius tincidunt dolor, non molestie dolor luctus a.</p>
 	</div>
 
-	<div id="card">
-		<div id="type"></div>
-		<ul id="properties"></ul>
+	<!-- A modal-style message that appears while scanning -->
+	<div id="overlay">
+		<div id="scanning" class="dialog">
+			<p>Scanning...</p>
+		</div>
 	</div>
-	
+
+	<div id="failure" class="dialog">
+		<p>Unrecognized card.</p>
+	</div>
+
+	<div id="success" class="dialog">
+		<p>Successful scan!</p>
+
+		<div id="properties">
+
+		</div>
+	</div>
+
 	<script type="text/javascript">
 
-		var success = function (data) {
-			$("#status").text("Success!");
+		// Called by plugin on a successful scan.
+		var complete = function (data) {
+
+			// Is it a payment card?
+			if (data.type == "generic")
+				return;
+
+			// Copy data fields to form
+			$("#firstName").val(data.firstName);
+			$("#lastName").val(data.lastName);
+			$("#account").val(data.account);
+			$("#expMonth").val(data.expMonth);
+			$("#expYear").val(data.expYear);
+			$("#type").val(data.type);
+
+		};
+
+		// Event handler for scanstart.cardswipe.
+		var scanstart = function () {
+			$("#overlay").fadeIn(200);
+		};
+
+		// Event handler for scanend.cardswipe.
+		var scanend = function () {
+			$("#overlay").fadeOut(200);
+		};
+
+		// Event handler for success.cardswipe.  Displays returned data in a dialog
+		var success = function (event, data) {
 
 			$("#properties").empty();
 
-			$("#type").text(data.type);
 			// Iterate properties of parsed data
 			for (var key in data) {
-				if (key != 'type' && data.hasOwnProperty(key)) {
+				if (data.hasOwnProperty(key)) {
 					var text = key + ': ' + data[key];
-					$("#properties").append('<li class="data">' + text + '</li>');
+					$("#properties").append('<div class="property">' + text + '</div>');
 				}
 			}
-		};
 
-		var error = function () {
-			$("#status").text("Failed!");
-			$(".line").text("");
-		};
 
-		var scanstart = function () {
-			$("#type").text("Scanning...");
+			$("#success").fadeIn().delay(3000).fadeOut();
+		}
 
-			$("#pagecontent").addClass("scanning");
-		};
-
-		var scanend = function () {
-			$("#pagecontent").removeClass("scanning");
-		};
+		var failure = function () {
+			$("#failure").fadeIn().delay(1000).fadeOut();
+		}
 
 		// Initialize the plugin with default parser and callbacks.
 		//
@@ -69,10 +116,9 @@
 		// Set firstLineOnly to true to invoke the parser after scanning the first line. This will speed up the
 		// time from the start of the scan to invoking your success callback.
 		$.cardswipe({
-			firstLineOnly: false,
-			success: success,
+			firstLineOnly: true,
+			complete: complete,
 			parsers: ["visa", "amex", "mastercard", "generic"],
-			error: error,
 			debug: false
 		});
 
@@ -80,8 +126,9 @@
 		$(document)
 			.bind("scanstart.cardswipe", scanstart)
 			.bind("scanend.cardswipe", scanend)
+			.bind("success.cardswipe", success)
+			.bind("failure.cardswipe", failure)
 		;
-
 	</script>
 </body>
 

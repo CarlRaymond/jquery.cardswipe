@@ -21,7 +21,6 @@
 
 #pagecontent.scanning {
 		-webkit-filter: blur(1px) grayscale(50%);
-		.transform(scale: 0.9);
 }
 
 .data {
@@ -29,32 +28,56 @@
 	font-size: 80%;
 }
 
-#card {
-	transform: scale(1.5);
-	opacity: 0;
+form ul { list-style: none; }
 
+.dialog {
 	position: absolute;
-	border: 3px solid black;
-	height: 162px;
-	width: 258px;
+	top: 25%;
+	left: 25%;
+	margin: auto;
 	padding: 20px;
-	z-index: 1000;
+
+	border: 3px solid black;
 	.border-radius(9px);
-
-	&.scanning {
-		transform: scale(1);
-		opacity: 1;
-	}
-}
-
-#pagecontent, #card {
-	.transition(all; 0.2s; ease);
-}
-
-#type {
-	font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+	font-family: 'Trebuchet MS', sans-serif;
 	font-size: 150%;
 	font-weight: bold;
 	width: auto;
+}
+
+#overlay {
+	position: fixed;
+	display: none;
+	background-color: rgba(0, 0, 0, 0.25);
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
 	text-align: center;
+	z-index: 999;
+}
+
+#scanning {
+	.dialog();
+	z-index: 1000;
+	color: black;
+	background-color: #6495ed;
+}
+
+#success {
+	.dialog();
+	display: none;
+	color: black;
+	background-color: #5be298;
+}
+
+#failure {
+	.dialog();
+	display: none;
+	color: black;
+	background-color: #cd5c5c;
+}
+
+#pagecontent, #background {
+	.transition(0.2s; ease);
 }

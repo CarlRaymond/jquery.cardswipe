@@ -36,11 +36,12 @@
 
 	// Built-in parsers. These include simplistic credit card parsers that
 	// recognize various card issuers based on patterns of the account number.
-	// There is no guarantee these are correct or complete.
+	// There is no guarantee these are correct or complete; they are based
+	// on information from Wikipedia.
 	// Account numbers are validated by the Luhn checksum algorithm.
 	var builtinParsers = {
 
-		// Generic parser. Separates raw data into up to three lines
+		// Generic parser. Separates raw data into up to three lines.
 		generic: function (rawData) {
 				var pattern = new RegExp("^(%[^%;\\?]+\\?)?(;[0-9\\:<>\\=]+\\?)?(;[0-9\\:<>\\=]+\\?)?");
 
@@ -109,7 +110,7 @@
 
 		// American Express parser
 		amex: function (rawData) {
-			// American Express starts with 34 or 37, and is 15 digits long.  According to Wikipedia.
+			// American Express starts with 34 or 37, and is 15 digits long.
 			var pattern = new RegExp("^%B(3[4|7][0-9]{13})\\^([A-Z ]+)/([A-Z ]+)\\^([0-9]{2})([0-9]{2})");
 
 			var match = pattern.exec(rawData);
@@ -147,30 +148,27 @@
 	// Gets or sets the current state.
 	var state = function() {
 
-		if (arguments.length > 0) {
-			// Set new state
-			var newState = arguments[0];
-			if (newState == state)
-				return;
-
-			if (settings.debug) {
-				console.log("%s -> %s", stateNames[currentState], stateNames[newState]);
-			}
-
-			// Raise events when entering and leaving the READING state
-			if (newState == states.READING)
-				$(document).trigger("scanstart.cardswipe");
-
-			if (currentState == states.READING)
-				$(document).trigger("scanend.cardswipe");
-
-			currentState = newState;
-		}
-		else {
-			// Get current state
+		if (arguments.length == 0) {
 			return currentState;
 		}
 
+		// Set new state.
+		var newState = arguments[0];
+		if (newState == state)
+			return;
+
+		if (settings.debug) {
+			console.log("%s -> %s", stateNames[currentState], stateNames[newState]);
+		}
+
+		// Raise events when entering and leaving the READING state
+		if (newState == states.READING)
+			$(document).trigger("scanstart.cardswipe");
+
+		if (currentState == states.READING)
+			$(document).trigger("scanend.cardswipe");
+
+		currentState = newState;
 	};
 
 	// Array holding scanned characters
@@ -184,7 +182,7 @@
 		settings.debug && console.log(e.which + ': ' + String.fromCharCode(e.which));
 		switch (state()) {
 
-			// IDLE: Look for '%', and jump to PENDING.  Otherwise, pass the keypress through.
+			// IDLE: Look for '%', and jump to PENDING.
 			case states.IDLE:
 				// Look for '%'
 				if (e.which == 37) {
@@ -196,7 +194,7 @@
 					startTimer();
 				}
 
-				// Look for prefix, if defined
+				// Look for prefix, if defined, and jump to PREFIX.
 				if (settings.prefixCode && settings.prefixCode == e.which) {
 					state(states.PREFIX);
 					e.preventDefault();
@@ -266,7 +264,6 @@
 
 			// PREFIX: Eat up characters until % is seen, then jump to PENDING
 			case states.PREFIX:
-				settings.debug && console.log('PREFIX');
 
 				// If prefix character again, pass it through and return to IDLE state.
 				if (e.which == settings.prefixCode) {
@@ -341,8 +338,8 @@
 		    if (parsedData == null)
 		      continue;
 
-		  	// Success. Invoke callback
-		    settings.success && settings.success.call(this, parsedData);
+		  	// Scan complete. Invoke callback
+		    settings.complete && settings.complete.call(this, parsedData);
 
 				// Raise success event.
 		    $(document).trigger("success.cardswipe", parsedData);
@@ -353,7 +350,7 @@
 		// All parsers failed.
 
 		settings.error && settings.error.call(this, rawData);
-		$(document).trigger("error.cardswipe");
+		$(document).trigger("failure.cardswipe");
 	};
 
 	// Binds the event listener
@@ -367,8 +364,8 @@
 	};
 
 	// Default callback used if no other specified. Works with default parser.
-	var defaultSuccessCallback = function (cardData) {
-		var text = ['Success!\nLine 1: ', cardData.line1, '\nLine 2: ', cardData.line2, '\nLine 3: ', cardData.line3].join('');
+	var defaultCompleteCallback = function (cardData) {
+		var text = ['Line 1: ', cardData.line1, '\nLine 2: ', cardData.line2, '\nLine 3: ', cardData.line3].join('');
 		alert(text);
 	};
 
@@ -376,7 +373,7 @@
 	var defaults = {
 		enabled: true,
 		interdigitTimeout: 250,
-		success: defaultSuccessCallback,
+		complete: defaultCompleteCallback,
 		error: null,
 		parsers: [ "generic" ],
 		firstLineOnly: false,
