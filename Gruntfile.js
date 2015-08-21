@@ -16,7 +16,7 @@ module.exports = function(grunt) {
     concat: {
       options: {
         banner: '<%= banner %>',
-        stripBanners: true
+        stripBanners: true,
       },
       dist: {
         src: ['src/<%= pkg.name %>.js'],
@@ -32,12 +32,23 @@ module.exports = function(grunt) {
     		src: 'src/<%= pkg.name %>.js',
     		dest: 'dist/<%= pkg.name %>.min.js'
     	}
-    }
+    },
+
+    connect: {
+    	server: {
+    		options: {
+    			port: 9001,
+    			keepalive: true,
+ 	       	open: 'http://localhost:9001/demo.html'
+    		}
+    	}
+    },
   });
 
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-connect');
 
   grunt.registerTask('default', ['clean', 'concat', 'uglify'])
 };
