@@ -1,0 +1,29 @@
+{
+  "name": "jquery.cardswipe",
+  "version": "2.0.0",
+  "description": "jQuery plugin for magnetic strip card readers",
+  "main": "jquery.cardswipe.js",
+  "scripts": {
+    "test": "grunt qunit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CarlRaymond/jquery.cardswipe.git"
+  },
+  "keywords": [
+    "plugin",
+    "magentic",
+    "stripe",
+    "card",
+    "reader"
+  ],
+  "author": "Carl Raymond",
+  "license": "GPLv2",
+  "bugs": {
+    "url": "https://github.com/CarlRaymond/jquery.cardswipe/issues"
+  },
+  "homepage": "https://github.com/CarlRaymond/jquery.cardswipe",
+  "devDependencies": {
+    "grunt": "^0.4.5"
+  }
+}
