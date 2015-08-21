@@ -5,7 +5,7 @@
 	<meta charset="utf-8" />
 	<title>Cardswipe Demonstration</title>
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
-	<script type="text/javascript" src="dist/jquery.cardswipe.min.js"></script>
+	<script type="text/javascript" src="dist/jquery.cardswipe.js"></script>
 
 	<style type="text/css">
 		.data { font-family: "Lucida Console", Monaco, monospace }
@@ -59,7 +59,7 @@
 		// time from the start of the scan to invoking your success callback.
 		$.cardswipe({
 			firstLineOnly: false,
-			success: success,
+			complete: success,
 			parsers: [ "visa", "mastercard", "amex", "generic" ],
 			error: error,
 			debug: true
