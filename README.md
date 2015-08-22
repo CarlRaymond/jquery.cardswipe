@@ -13,14 +13,14 @@ If you are scanning credit cards like Visa, MasterCard, or American Express, the
 the plugin that can recognize those formats. A built-in generic parser will parse up to three lines of data.
 
 # Sample Pages
-The sample page [demo-simple.html](demo.html) shows a basic example of using the plugin with the builit-in parsers.
+The sample page [demo-simple.html](demo-simple.html) shows a basic example of using the plugin with the builit-in parsers.
 
 The plugin defines four custom events which are fired during the scanning process. They are
 `scanstart.cardswipe`, `scanend.cardswipe`, `success.cardswipe`, and `failure.cardswipe`.
 You can bind listeners to these events to update your page's user interface to provide visual feedback
 about the scan. The `success.cardswipe` event handler will receive two parameters, the `event` object
 and the scanned data. This is the same data that is passed to the `complete` callback. The callback
-is invoked first, and then the event is fired. The sample page [demo-events.html](events.html) shows an example
+is invoked first, and then the event is fired. The sample page [demo-events.html](demo-events.html) shows an example
 of using event listeners.
 
 If you have trouble using your scanner and cards with the sample pages, try scanning a card into a
