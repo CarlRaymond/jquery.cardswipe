@@ -207,8 +207,9 @@
 			// PENDING: Look for A-Z, then jump to READING.  Otherwise, pass the keypress through, reset and jump to IDLE.
 			case states.PENDING:
 				// Look for format code character, A-Z. Almost always B for cards
-				// used by the general public.
-				if (e.which >= 65 && e.which <= 90) {
+				// used by the general public. Some reader / OS combinations
+				// will issue lowercase characters when the caps lock key is on.
+				if ((e.which >= 65 && e.which <= 90) || (e.which >= 97 && e.which <= 122)) {
 					state(states.READING);
 
 					// Leaving focus on a form element wreaks browser-dependent
