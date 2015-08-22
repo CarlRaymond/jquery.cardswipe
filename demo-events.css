@@ -1,4 +1,4 @@
-﻿#pagecontent.scanning {
+#pagecontent.scanning {
   -webkit-filter: blur(1px) grayscale(50%);
 }
 .data {
@@ -95,4 +95,4 @@ form ul {
   -o-transition: all 0.2s ease;
   transition: all 0.2s ease;
 }
-/*# sourceMappingURL=events.css.map */
+/*# sourceMappingURL=demo-events.css.map */

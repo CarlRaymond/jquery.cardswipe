@@ -7,7 +7,7 @@
     "email": "carl@orcharddev.com",
     "url": "https://github.com/CarlRaymond"
   },
-  "description": "jQuery pluging which allows a web application to read magnetic stripe cards using common card readers that simulate a keyboard.",
+  "description": "jQuery plugin which allows a web application to read magnetic stripe cards using common card readers that simulate a keyboard.",
   "main": "jquery.cardswipe.js",
   "scripts": {
     "test": "grunt qunit"
@@ -35,6 +35,7 @@
     "grunt-contrib-clean": "^0.6.0",
     "grunt-contrib-concat": "^0.5.1",
     "grunt-contrib-connect": "^0.11.2",
+    "grunt-contrib-less": "^1.0.1",
     "grunt-contrib-uglify": "^0.9.1"
   }
 }

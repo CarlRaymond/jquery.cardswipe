@@ -39,13 +39,24 @@ module.exports = function(grunt) {
     		options: {
     			port: 9001,
     			keepalive: true,
- 	       	open: 'http://localhost:9001/demo.html'
+ 	       	open: 'http://localhost:9001/demo-events.html'
+    		}
+    	}
+    },
+
+    less: {
+    	options: {
+    		sourceMap: true,
+    	},
+    	dist: {
+    		files: {
+    			"demo-events.css": "demo-events.less"
     		}
     	}
     },
 
     demo: {
-    	
+
     }
   });
 
@@ -53,6 +64,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-connect');
+  grunt.loadNpmTasks('grunt-contrib-less');
 
-  grunt.registerTask('default', ['clean', 'concat', 'uglify'])
+  grunt.registerTask('default', ['clean', 'concat', 'uglify', 'less'])
 };
