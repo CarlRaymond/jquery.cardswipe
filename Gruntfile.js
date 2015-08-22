@@ -24,6 +24,15 @@ module.exports = function(grunt) {
       }
     },
 
+    jshint: {
+      src: {
+        options: {
+          jshintrc: 'src/.jshintrc'
+        },
+        src: ['src/**/*.js']
+      },
+    },
+
     uglify: {
     	options: {
     		banner: '<%= banner %>'
@@ -56,7 +65,7 @@ module.exports = function(grunt) {
     },
 
     demo: {
-
+ 
     }
   });
 
@@ -65,6 +74,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-less');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
 
-  grunt.registerTask('default', ['clean', 'concat', 'uglify', 'less'])
+  grunt.registerTask('default', ['jshint', 'clean', 'concat', 'uglify', 'less'])
 };

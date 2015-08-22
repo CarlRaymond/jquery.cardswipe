@@ -34,7 +34,7 @@
 		else {
 			throw 'Method ' + method + ' does not exist on jQuery.cardswipe';
 		}
-	}
+	};
 
 
 	// Built-in parsers. These include simplistic credit card parsers that
@@ -151,7 +151,7 @@
 	// Gets or sets the current state.
 	var state = function() {
 
-		if (arguments.length == 0) {
+		if (arguments.length === 0) {
 			return currentState;
 		}
 
@@ -182,7 +182,7 @@
 
 	// Keypress listener
 	var listener = function (e) {
-		settings.debug && console.log(e.which + ': ' + String.fromCharCode(e.which));
+		if (settings.debug) { console.log(e.which + ': ' + String.fromCharCode(e.which));}
 		switch (state()) {
 
 			// IDLE: Look for '%', and jump to PENDING.
@@ -190,7 +190,7 @@
 				// Look for '%'
 				if (e.which == 37) {
 					state(states.PENDING);
-					scanbuffer = new Array();
+					scanbuffer = [];
 					processCode(e.which);
 					e.preventDefault();
 					e.stopPropagation();
@@ -281,7 +281,7 @@
 				// Look for '%'
 				if (e.which == 37) {
 					state(states.PENDING);
-					scanbuffer = new Array();
+					scanbuffer = [];
 					processCode(e.which);
 				}
 				startTimer();
@@ -291,7 +291,7 @@
 	// Converts a scancode to a character and appends it to the buffer.
 	var processCode = function (code) {
 		scanbuffer.push(String.fromCharCode(code));
-	}
+	};
 
 	var startTimer = function () {
 		clearTimeout(timerHandle);
@@ -305,7 +305,7 @@
 
 	// Invoked when the timer lapses.
 	var onTimeout = function () {
-		settings.debug && console.log('Timeout!');
+		if (settings.debug) { console.log('Timeout!'); }
 		if (state() == states.READING) {
 			processScan();
 		}
@@ -343,7 +343,7 @@
 		      continue;
 
 		  	// Scan complete. Invoke callback
-		    settings.complete && settings.complete.call(this, parsedData);
+		    if (settings.complete) { settings.complete.call(this, parsedData); }
 
 				// Raise success event.
 		    $(document).trigger("success.cardswipe", parsedData);
@@ -353,7 +353,7 @@
 
 		// All parsers failed.
 
-		settings.error && settings.error.call(this, rawData);
+		if (settings.error) { settings.error.call(this, rawData); }
 		$(document).trigger("failure.cardswipe");
 	};
 
@@ -407,11 +407,11 @@
 				methods.enable();
 		},
 
-		disable: function (options) {
+		disable: function () {
 			unbindListener();
 		},
 
-		enable: function (options) {
+		enable: function () {
 			bindListener();
 		}
 	};
@@ -439,7 +439,7 @@
 			odd = !odd;
 		}
 
-		return sum % 10 == 0 && sum > 0;
+		return sum % 10 === 0 && sum > 0;
 	};
 
 
