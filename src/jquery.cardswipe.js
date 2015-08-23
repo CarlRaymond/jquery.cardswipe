@@ -51,9 +51,9 @@
 				// Extract the three lines
 				var cardData = {
 					type: "generic",
-					line1: match[1],
-					line2: match[2],
-					line3: match[3]
+					line1: match[1] ? match[1].substr(1, match[1].length-2) : "",
+					line2: match[2] ? match[2].substr(1, match[2].length-2) : "",
+					line3: match[3] ? match[3].substr(1, match[3].length-2) : "",
 				};
 
 				return cardData;
@@ -157,9 +157,7 @@
 		if (newState == state)
 			return;
 
-		if (settings.debug) {
-			console.log("%s -> %s", stateNames[currentState], stateNames[newState]);
-		}
+		if (settings.debug) { console.log("%s -> %s", stateNames[currentState], stateNames[newState]); }
 
 		// Raise events when entering and leaving the READING state
 		if (newState == states.READING)
@@ -419,7 +417,7 @@
 		var map = [0, 2, 4, 6, 8, 1, 3, 5, 7, 9];
 		var sum = 0;
 
-		// Proceed right to left. Even and odd digits are handled differently.
+		// Proceed right to left. Even and odd digit positions are handled differently.
 		var n = digits.length;
 		var odd = true;
 		while (n--) {
