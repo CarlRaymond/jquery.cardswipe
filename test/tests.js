@@ -1,4 +1,4 @@
-QUnit.test("plugin loaded", function(assert) {
+QUnit.test("plugin loaded", function (assert) {
 	assert.ok(typeof(jQuery.cardswipe) === 'function', "Plugin loaded");
 });
 
@@ -88,11 +88,12 @@ QUnit.test("American Express parser", function(assert) {
 });
 
 
+
 QUnit.test("Keypress: %", function(assert) {
 	expect(3);
 
 	var timeout = 100;
-	$.cardswipe({ enable: true, interdigitTimeout: 100 });
+	$.cardswipe({ enable: true, interdigitTimeout: timeout });
 
 	var states = $.cardswipe("_getStates");
 	var initialState = $.cardswipe("_getState");
@@ -109,7 +110,7 @@ QUnit.test("Keypress: %", function(assert) {
 		var state = $.cardswipe("_getState");
 		assert.equal(state, states.PENDING, "On % state is PENDING");
 		done1();
-	}, 50);
+	}, 0);
 
 	// Wait long enough for timeout. State should be IDLE again.
 	var done2 = assert.async();
@@ -117,8 +118,9 @@ QUnit.test("Keypress: %", function(assert) {
 		var state = $.cardswipe("_getState");
 		assert.equal(state, states.IDLE, "On timeout state is IDLE");
 		done2();
-	}, timeout);
+	}, timeout + 1);
 });
+
 
 QUnit.test("Keypress: not %", function(assert) {
 	expect(2);
@@ -141,14 +143,15 @@ QUnit.test("Keypress: not %", function(assert) {
 		var state = $.cardswipe("_getState");
 		assert.equal(state, states.IDLE, "On non-% state is IDLE");
 		done1();
-	}, 20);
+	}, 0);
 });
 
+
 QUnit.test("Keypress: %B", function(assert) {
-	expect(3);
+	expect(4);
 
 	var timeout = 100;
-	$.cardswipe({ enable: true, interdigitTimeout: timeout});
+	$.cardswipe({ enable: true, interdigitTimeout: timeout, parsers: [] });
 
 	var states = $.cardswipe("_getStates");
 	var initialState = $.cardswipe("_getState");
@@ -167,7 +170,7 @@ QUnit.test("Keypress: %B", function(assert) {
 		done1();
 	
 		// Send a B character
-		var event2 = $.Event({ which: 66 });
+		var event2 = $.Event("keypress", { which: 66 });
 		$("body").trigger(event2);
 
 		// setTimeout allows for processing; then state should be READING
@@ -176,6 +179,14 @@ QUnit.test("Keypress: %B", function(assert) {
 			var state = $.cardswipe("_getState");
 			assert.equal(state, states.READING, "On B, state is READING");
 			done2();
-		}, 50);
-	}, 50);
+
+			// Wait long enough for timeout. State should be IDLE again.
+			var done3 = assert.async();
+			setTimeout(function () {
+				var state = $.cardswipe("_getState");
+				assert.equal(state, states.IDLE, "On timeout state is IDLE");
+				done3();
+			}, timeout + 1);
+		}, 0);
+	}, 0);
 });

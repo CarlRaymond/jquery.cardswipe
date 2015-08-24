@@ -10,7 +10,7 @@
   "description": "jQuery plugin which allows a web application to read magnetic stripe cards using common card readers that simulate a keyboard.",
   "main": "jquery.cardswipe.js",
   "scripts": {
-    "test": "grunt qunit"
+    "test": "grunt test"
   },
   "repository": {
     "type": "git",

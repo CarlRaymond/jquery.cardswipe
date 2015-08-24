@@ -183,7 +183,6 @@
 
 			// IDLE: Look for '%', and jump to PENDING.
 			case states.IDLE:
-				// Look for '%'
 				if (e.which == 37) {
 					state(states.PENDING);
 					scanbuffer = [];
@@ -422,7 +421,7 @@
 	// Callable plugin methods
 	var methods = {
 		init: function (options) {
-			settings = $.extend(defaults, options || {});
+			settings = $.extend({}, defaults, options);
 
 			// Is a prefix character defined?
 			if (settings.prefixCharacter) {

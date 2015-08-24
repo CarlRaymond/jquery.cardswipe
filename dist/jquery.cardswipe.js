@@ -1,4 +1,4 @@
-/*! jQuery.CardSwipe Magnetic Stripe Card Reader - v2.0.1 - 2015-08-23
+/*! jQuery.CardSwipe Magnetic Stripe Card Reader - v2.0.1 - 2015-08-24
 * https://github.com/CarlRaymond/jquery.cardswipe
 * Copyright (c) 2015 Carl J. Raymond; Licensed GPLv2 */
 // A jQuery plugin to detect magnetic card swipes.  Requires a card reader that simulates a keyboard.
@@ -186,7 +186,6 @@
 
 			// IDLE: Look for '%', and jump to PENDING.
 			case states.IDLE:
-				// Look for '%'
 				if (e.which == 37) {
 					state(states.PENDING);
 					scanbuffer = [];
@@ -425,7 +424,7 @@
 	// Callable plugin methods
 	var methods = {
 		init: function (options) {
-			settings = $.extend(defaults, options || {});
+			settings = $.extend({}, defaults, options);
 
 			// Is a prefix character defined?
 			if (settings.prefixCharacter) {
