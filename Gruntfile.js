@@ -44,13 +44,21 @@ module.exports = function(grunt) {
     },
 
     connect: {
-    	server: {
+    	demo: {
     		options: {
     			port: 9001,
     			keepalive: true,
  	       	open: 'http://localhost:9001/demo-events.html'
     		}
-    	}
+    	},
+
+    	test: {
+    		options: {
+    			port: 9001,
+    			keepalive: true,
+ 	       	open: 'http://localhost:9001/test/index.html'
+    		}
+    	},
     },
 
     less: {
@@ -75,6 +83,10 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-less');
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-contrib-qunit');
 
-  grunt.registerTask('default', ['jshint', 'clean', 'concat', 'uglify', 'less'])
+  grunt.registerTask('default', ['build',]);
+  grunt.registerTask('build', ['jshint', 'clean', 'concat', 'uglify', 'less']);
+  grunt.registerTask('demo', ['build', 'connect:demo']);
+  grunt.registerTask('test', ['build', 'connect:test']);
 };

@@ -17,6 +17,24 @@
     }
 }(function ($) {
 
+	// The plugin proper.  Dispatches methods using the usual jQuery pattern.
+	var plugin = function (method) {
+		// Method calling logic. If named method exists, execute it with passed arguments
+		if (methods[method]) {
+			return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
+		}
+			// If no argument, or an object passed, invoke init method.
+		else if (typeof method === 'object' || !method) {
+			return methods.init.apply(this, arguments);
+		}
+		else {
+			throw 'Method ' + method + ' does not exist on jQuery.cardswipe';
+		}
+	};
+
+	// Attach plugin to jQuery object.
+	$.cardswipe = plugin;
+
 	// Built-in parsers. These include simplistic credit card parsers that
 	// recognize various card issuers based on patterns of the account number.
 	// There is no guarantee these are correct or complete; they are based
@@ -415,6 +433,10 @@
 				settings.prefixCode = settings.prefixCharacter.charCodeAt(0);
 			}
 
+			// Reset state
+			clearTimer();
+			state(states.IDLE);
+
 			if (settings.enabled)
 				methods.enable();
 		},
@@ -427,31 +449,30 @@
 			bindListener();
 		},
 
-		// Method to allow easy testing of parsers. The supplied raw character data, as a string,
-		// are run through the parsers, and the processed scan data is returned. The compete or
+		// Test helpers. These allow for easier testing of the plugin. These aren't intended
+		// for use in production.
+
+		// Runs the supplied raw character data, as a string,
+		// through the parsers, and the processed scan data is returned. The compete or
 		// fail callback will be invoked, and the success.cardswipe and failure.cardswipe events
 		// will be raised. The scanstart.cardswipe and scanend.cardswipe events will not be
 		// raised.
 		_parseData: function(rawData) {
 			return parseData(rawData);
-		}
-	};
+		},
 
-	// The plugin proper.  Dispatches methods using the usual jQuery pattern.
-	$.cardswipe = function (method) {
-		// Method calling logic. If named method exists, execute it with passed arguments
-		if (methods[method]) {
-			return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
-		}
-			// If no argument, or an object passed, invoke init method.
-		else if (typeof method === 'object' || !method) {
-			return methods.init.apply(this, arguments);
-		}
-		else {
-			throw 'Method ' + method + ' does not exist on jQuery.cardswipe';
-		}
-	};
+		_getState: function() {
+			return currentState;
+		},
 
+		_getStates: function() {
+			return states;
+		},
+		
+		_builtinParsers : function() {
+			return builtinParsers;
+		},
+	};
 
 
 }));
