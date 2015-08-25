@@ -190,3 +190,80 @@ QUnit.test("Keypress: %B", function(assert) {
 		}, 0);
 	}, 0);
 });
+
+QUnit.test("Ordinary keypress not suppressed", function (assert) {
+	expect(2);
+
+	$.cardswipe({ enable: true });
+
+	var keypressCounter = 0;
+	var lastWhich;
+
+	// Remove all event handlers from input, and attach a new one.
+	$("#textbox")
+		.off()
+		.on("keypress", function (e) {
+			keypressCounter++;
+			lastWhich = e.which;
+		})
+		.focus()
+		;
+
+	// Send 'A' character
+	$("#textbox").trigger($.Event("keypress", { which: 65 }));
+	var done = assert.async();
+	setTimeout(function () {
+		assert.equal(keypressCounter, 1, "One keypress received");
+		assert.equal(lastWhich, 65, "Correct character");
+		done();
+	});
+
+});
+
+QUnit.test("Keypress: %%", function (assert) {
+	expect(6);
+
+	$.cardswipe({ enable: true });
+
+	// Counts kepresses received by form control
+	var keypressCounter = 0;
+	var lastWhich = 0;
+
+	// Remove any existing handler on textbox and bind a new one
+	$("#textbox")
+		.off()
+		.on("keypress", function (e) {
+			keypressCounter++;
+			lastWhich = e.which;
+		})
+		.focus()
+	;
+
+	var states = $.cardswipe("_getStates");
+	var initialState = $.cardswipe("_getState");
+
+	assert.equal(initialState, states.IDLE, "Initial state is IDLE");
+
+	// Send a % character
+	$("#textbox").trigger($.Event("keypress", { which: 37 }));
+
+	var done1 = assert.async();
+	setTimeout(function () {
+		var state = $.cardswipe("_getState");
+		assert.equal(state, states.PENDING, "On first %, state is PENDING");
+		assert.equal(keypressCounter, 0, "First % is suppressed");
+		done1();
+
+		// Send another % character
+		$("#textbox").trigger($.Event("keypress", { which: 37 }));
+
+		var done2 = assert.async();
+		setTimeout(function () {
+			var state = $.cardswipe("_getState");
+			assert.equal(state, states.IDLE, "On second %, state is IDLE");
+			assert.equal(keypressCounter, 1, "Second % is not suppressed");
+			assert.equal(lastWhich, 37, "Correct character")
+			done2();
+		});
+	});
+});
