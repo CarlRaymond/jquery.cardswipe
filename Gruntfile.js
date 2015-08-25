@@ -35,7 +35,7 @@ module.exports = function(grunt) {
 
     uglify: {
     	options: {
-    		banner: '<%= banner %>'
+    		banner: '<%= banner %>',
     	},
     	build: {
     		src: 'src/<%= pkg.name %>.js',

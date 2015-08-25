@@ -1,4 +1,4 @@
-/*! jQuery.CardSwipe Magnetic Stripe Card Reader - v2.0.1 - 2015-08-24
+/*! jQuery.CardSwipe Magnetic Stripe Card Reader - v2.0.1 - 2015-08-25
 * https://github.com/CarlRaymond/jquery.cardswipe
 * Copyright (c) 2015 Carl J. Raymond; Licensed GPLv2 */
 // A jQuery plugin to detect magnetic card swipes.  Requires a card reader that simulates a keyboard.
@@ -435,7 +435,7 @@
 			// Is a prefix character defined?
 			if (settings.prefixCharacter) {
 				if (settings.prefixCharacter.length != 1)
-					throw 'PrefixCharacter must be a single character';
+					throw 'prefixCharacter must be a single character';
 
 				// Convert to character code
 				settings.prefixCode = settings.prefixCharacter.charCodeAt(0);
@@ -444,9 +444,12 @@
 			// Reset state
 			clearTimer();
 			state(states.IDLE);
+			scanbuffer = null;
 
 			if (settings.enabled)
 				methods.enable();
+			else
+				methods.disable();
 		},
 
 		disable: function () {
@@ -460,8 +463,6 @@
 		// Test helpers. These allow for easier testing of the plugin. These aren't intended
 		// for use in production.
 
-		// Runs the supplied raw character data, as a string,
-		// through the parsers, and return the parsed result, if a parser succeeds, or null.
 		_parseData: function(rawData) {
 			return parseData(rawData);
 		},
@@ -474,6 +475,10 @@
 			return states;
 		},
 		
+		_getSettings: function() {
+			return settings;
+		},
+
 		_builtinParsers : function() {
 			return builtinParsers;
 		},

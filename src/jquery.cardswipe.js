@@ -432,7 +432,7 @@
 			// Is a prefix character defined?
 			if (settings.prefixCharacter) {
 				if (settings.prefixCharacter.length != 1)
-					throw 'PrefixCharacter must be a single character';
+					throw 'prefixCharacter must be a single character';
 
 				// Convert to character code
 				settings.prefixCode = settings.prefixCharacter.charCodeAt(0);
@@ -441,9 +441,12 @@
 			// Reset state
 			clearTimer();
 			state(states.IDLE);
+			scanbuffer = null;
 
 			if (settings.enabled)
 				methods.enable();
+			else
+				methods.disable();
 		},
 
 		disable: function () {
@@ -469,6 +472,10 @@
 			return states;
 		},
 		
+		_getSettings: function() {
+			return settings;
+		},
+
 		_builtinParsers : function() {
 			return builtinParsers;
 		},
