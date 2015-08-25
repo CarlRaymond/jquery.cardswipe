@@ -324,11 +324,25 @@
 		// Invoke rawData callback if defined, a testing hook.
 		if (settings.rawDataCallback) { settings.rawDataCallback.call(this, rawData); }
 
-		parseData(rawData);
+		var result = parseData(rawData);
+
+		if (result) {
+			// Scan complete. Invoke callback
+			if (settings.complete) { settings.complete.call(this, parsedData); }
+
+			// Raise success event.
+			$(document).trigger("success.cardswipe", parsedData);
+		}
+		else
+		{
+			// All parsers failed.
+			if (settings.error) { settings.error.call(this, rawData); }
+			$(document).trigger("failure.cardswipe");
+		}
 	};
 
 	var parseData = function(rawData) {
-	  // Invoke client parsers until one succeeds
+	  // Invoke client parsers until one succeeds, and return the parsed result.
 		for (var i = 0; i < settings.parsers.length; i++) {
 		  var ref = settings.parsers[i];
 		  var parser;
@@ -347,20 +361,12 @@
 		    if (parsedData == null)
 		      continue;
 
-		  	// Scan complete. Invoke callback
-		    if (settings.complete) { settings.complete.call(this, parsedData); }
-
-				// Raise success event.
-		    $(document).trigger("success.cardswipe", parsedData);
-
-		    // For test purposes, return parsedData here
 		    return parsedData;
 		  }
 		}
 
 		// All parsers failed.
-		if (settings.error) { settings.error.call(this, rawData); }
-		$(document).trigger("failure.cardswipe");
+		return null;
 	};
 
 	// Binds the event listener
@@ -455,10 +461,7 @@
 		// for use in production.
 
 		// Runs the supplied raw character data, as a string,
-		// through the parsers, and the processed scan data is returned. The compete or
-		// fail callback will be invoked, and the success.cardswipe and failure.cardswipe events
-		// will be raised. The scanstart.cardswipe and scanend.cardswipe events will not be
-		// raised.
+		// through the parsers, and return the parsed result, if a parser succeeds, or null.
 		_parseData: function(rawData) {
 			return parseData(rawData);
 		},
