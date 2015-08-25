@@ -481,7 +481,7 @@
 
 		_builtinParsers : function() {
 			return builtinParsers;
-		},
+		}
 	};
 
 
