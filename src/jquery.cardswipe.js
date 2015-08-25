@@ -54,7 +54,7 @@
 					type: "generic",
 					line1: match[1] ? match[1].substr(1, match[1].length-2) : "",
 					line2: match[2] ? match[2].substr(1, match[2].length-2) : "",
-					line3: match[3] ? match[3].substr(1, match[3].length-2) : "",
+					line3: match[3] ? match[3].substr(1, match[3].length-2) : ""
 				};
 
 				return cardData;
@@ -131,7 +131,7 @@
 			};
 
 			return cardData;
-		},
+		}
 	};
 
 
@@ -391,7 +391,7 @@
 		parsers: [ "generic" ],
 		firstLineOnly: false,
 		prefixCharacter: null,
-		debug: false,
+		debug: false
 	};
 
 	// Plugin actual settings
