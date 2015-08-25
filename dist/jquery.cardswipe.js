@@ -57,7 +57,7 @@
 					type: "generic",
 					line1: match[1] ? match[1].substr(1, match[1].length-2) : "",
 					line2: match[2] ? match[2].substr(1, match[2].length-2) : "",
-					line3: match[3] ? match[3].substr(1, match[3].length-2) : "",
+					line3: match[3] ? match[3].substr(1, match[3].length-2) : ""
 				};
 
 				return cardData;
@@ -134,7 +134,7 @@
 			};
 
 			return cardData;
-		},
+		}
 	};
 
 
@@ -371,12 +371,12 @@
 
 	// Binds the event listener
 	var bindListener = function () {
-		$(document).bind("keypress", listener);
+		$(document).on("keypress.cardswipe", listener);
 	};
 
 	// Unbinds the event listener
 	var unbindListener = function () {
-		$(document).unbind("keypress", listener);
+		$(document).off(".cardswipe", listener);
 	};
 
 	// Default callback used if no other specified. Works with default parser.
@@ -394,7 +394,7 @@
 		parsers: [ "generic" ],
 		firstLineOnly: false,
 		prefixCharacter: null,
-		debug: false,
+		debug: false
 	};
 
 	// Plugin actual settings
@@ -445,11 +445,10 @@
 			clearTimer();
 			state(states.IDLE);
 			scanbuffer = null;
+			unbindListener();
 
 			if (settings.enabled)
 				methods.enable();
-			else
-				methods.disable();
 		},
 
 		disable: function () {
