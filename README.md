@@ -138,6 +138,7 @@ parser recognizes the format, it should return an object that encapsulates the d
 the parser should return null. Then the plugin will invoke either the success callback, passing it the parsed
 object as a parameter, or it will invoke the error callback.
 
+#Special Cases
 Some card readers, like the Scriptel MagStripe, prefix the scanned data with a manufacturer-specific sequence.
 For the Scriptel, it's the string `!STCARD A `. To accommodate these readers, a prefix character can be set in
 the configuration. On seeing the prefix character, the state machine enters the PREFIX state, and consumes characters
