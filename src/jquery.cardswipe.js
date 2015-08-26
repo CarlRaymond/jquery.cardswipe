@@ -325,10 +325,10 @@
 
 		if (result) {
 			// Scan complete. Invoke callback
-			if (settings.complete) { settings.complete.call(this, parsedData); }
+			if (settings.complete) { settings.complete.call(this, result); }
 
 			// Raise success event.
-			$(document).trigger("success.cardswipe", parsedData);
+			$(document).trigger("success.cardswipe", result);
 		}
 		else
 		{
