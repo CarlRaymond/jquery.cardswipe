@@ -1,21 +1,129 @@
 
-QUnit.test("plugin loaded", function (assert) {
+// All states of FSM
+var allStates = $.cardswipe._states();
+var stateNames = $.cardswipe._stateNames();
+
+// Custom assertion that verifies the state of the plugin
+QUnit.assert.stateIs = function(expectedState, message) {
+
+	var state = $.cardswipe._state();
+	if (!message) {
+		message = "State is " + $.cardswipe._stateNames()[expectedState];
+	}
+
+	this.push(state === expectedState, state, expectedState, message);
+};
+
+
+// Utility to build a keypress event for a character
+function keypressFor(key) {
+	return $.Event("keypress", { which: key.charCodeAt(0) });
+}
+
+
+// Used by tests that need to simulate multiple keypress events.
+// Simulates a sequence of character keypresses, and verifies that after each
+// the state is as specified. Argument 'seq' is an array of objects, with
+// properties 'char' and 'state'.
+// Sends a keypress event corresponding to the character at the head of the list, and
+// verifies the state transitions to the corresponding value. Becuase this requires
+// letting the event handlers execute, it uses the "setTimeout trick" to queue up the
+// state verification.
+// Then it recursively invokes itself on the tail of the list. 
+//
+// seq is an array of objects with 'char' and 'state' properties. 'char' is a string
+// containing the character to send, and 'state' is the corresponding state that
+// the FSM should be in after processing the character. The optional 'then' property
+// will be executed after verifying the state. It is passed the assert object.
+//
+// If a 'lastly' function is supplied, it will be invoked after processing the
+// sequence, to make final assertions or whatnot.
+function validateSequence(assert, seq, lastly) {
+
+	// End of sequence?
+	if (seq.length === 0) {
+		// Invoke final function, if present
+		if (lastly) {
+			var lastlyDone = assert.async();
+			lastly(assert);
+			lastlyDone();
+		}
+		return;
+	}
+
+	// Split sequence into head element and the rest
+	var head = seq[0];
+	var tail = seq.slice(1);
+
+	// Send keypress, verify resulting state.
+	$("body").trigger(keypressFor(head.key));
+	var done = assert.async();
+
+	// Allow for the handler to execute. Queue the validation with setTimeout.
+	setTimeout(function() {
+		var message = "After '" + head.key + "' state is " + stateNames[head.state];
+		assert.stateIs(head.state, message);
+		done();
+
+		// Execute the "then" function, if it exists
+		if (head.then) {
+			var thendone = assert.async();
+			head.then(assert);
+			thendone();
+		}
+
+		// Recursively invoke on tail
+		validateSequence(assert, tail, lastly);
+	});
+}
+
+// Helper that waits a specified interval, then verifies the FSM state.
+// This returns a function that can be used as the 'lastly' argument
+// of validateSequence.
+function timeoutToState(assert, interval, state) {
+
+	var func = function(assert) {
+		var done = assert.async();
+		setTimeout(function() {
+			var message = "After timeout, state is " + stateNames[state];
+			assert.stateIs(state, message);
+			done();
+		}, interval+1);
+	};
+
+	return func;
+}
+
+
+// Constructor to assemble a sequence pair for validateSequence with fewer keystrokes.
+// char: character to send as argument of event
+// state: state the FSM should be in after processing the character
+// then: optional function to exeucte after transition.
+function Key(key, state, then) {
+	this.key = key;
+	this.state = state;
+	this.then = then;
+}
+
+
+
+QUnit.test("plugin loaded on page", function (assert) {
 	assert.ok(typeof(jQuery.cardswipe) === 'function', "Plugin loaded");
 });
 
+
 QUnit.test("plugin starts in IDLE", function(assert) {
 	$.cardswipe();
-	var states = $.cardswipe.states();
-	var state = $.cardswipe.state();
-	assert.equal(state, states.IDLE);
+	assert.stateIs(allStates.IDLE);
 });
+
 
 QUnit.test("Generic parser", function(assert) {
 	$.cardswipe();
 
 	var testData = '%B6009050000000000^SIMPSON/HOMER J           ^0000000X11111111100000000000000?;6009050000000000=00000002411111111100?\n';
 
-	var parser = $.cardswipe.builtinParsers().generic;
+	var parser = $.cardswipe._builtinParsers().generic;
 	var result = parser(testData);
 
 	var expected = {
@@ -27,10 +135,11 @@ QUnit.test("Generic parser", function(assert) {
 	assert.deepEqual(expected, result);
 });
 
+
 QUnit.test("Visa parser", function(assert) {
 	$.cardswipe();
 	var testData = "%B4111111111111111^DOE/JANE^1805101000000000000000503000000?";
-	var parser = $.cardswipe.builtinParsers().visa;
+	var parser = $.cardswipe._builtinParsers().visa;
 	var result = parser(testData);
 
 	var expected = {
@@ -45,10 +154,11 @@ QUnit.test("Visa parser", function(assert) {
 	assert.deepEqual(expected, result);
 });
 
+
 QUnit.test("Mastercard parser", function(assert) {
 	$.cardswipe();
 	var testData = "%B5555555555554444^DOE/JANE^1805101000000000000000503000000?";
-	var parser = $.cardswipe.builtinParsers().mastercard;
+	var parser = $.cardswipe._builtinParsers().mastercard;
 	var result = parser(testData);
 
 	var expected = {
@@ -63,10 +173,11 @@ QUnit.test("Mastercard parser", function(assert) {
 	assert.deepEqual(expected, result);
 });
 
+
 QUnit.test("American Express parser", function(assert) {
 	$.cardswipe();
 	var testData = "%B378282246310005^DOE/JANE^1805101000000000000000503000000?";
-	var parser = $.cardswipe.builtinParsers().amex;
+	var parser = $.cardswipe._builtinParsers().amex;
 	var result = parser(testData);
 
 	var expected = {
@@ -82,318 +193,201 @@ QUnit.test("American Express parser", function(assert) {
 });
 
 
-
-QUnit.test("Keypress: %", function(assert) {
-	expect(3);
+QUnit.test("Sequence: %", function(assert) {
+	expect(2);
 
 	var timeout = 100;
 	$.cardswipe({ enable: true, interdigitTimeout: timeout });
 
-	var states = $.cardswipe.states();
-	var initialState = $.cardswipe.state();
+	assert.stateIs(allStates.IDLE, "Initial state is IDLE");
 
-	assert.equal(initialState, states.IDLE, "Initial state is IDLE");
-
-	// Send a % keypress
-	var event = $.Event("keypress", { which: 37 });
-	$("body").trigger(event);
-
-	// Allow for processing; then state should be PENDING.
-	var done1 = assert.async();
-	setTimeout(function() {
-		var state = $.cardswipe.state();
-		assert.equal(state, states.PENDING, "On % state is PENDING");
-		done1();
-	}, 0);
-
-	// Wait long enough for timeout. State should be IDLE again.
-	var done2 = assert.async();
-	setTimeout(function() {
-		var state = $.cardswipe.state();
-		assert.equal(state, states.IDLE, "On timeout state is IDLE");
-		done2();
-	}, timeout + 1);
+	var stateSeq = [ new Key('%', allStates.PENDING) ];
+	validateSequence(assert, stateSeq);
 });
 
-
-QUnit.test("Keypress: not %", function(assert) {
-	expect(2);
+QUnit.test("Sequence: % with timeout", function(assert) {
+	expect(3);
 
 	var timeout = 100;
-	$.cardswipe({ enable: true, interdigitTimeout: timeout});
+	$.cardswipe({ enable: true, interdigitTimeout: timeout, parsers: []});
 
-	var states = $.cardswipe.states();
-	var initialState = $.cardswipe.state();
+	assert.stateIs(allStates.IDLE, "Initial state is IDLE");
+	var stateSeq = [ new Key('%', allStates.PENDING) ];
+	var lastly = timeoutToState(assert, timeout, allStates.IDLE);
 
-	assert.equal(initialState, states.IDLE, "Initial state is IDLE");
-
-	// Send a non-% keypress, like "A"
-	var event = $.Event("keypress", { which: 65 });
-	$("body").trigger(event);
-
-	// Allow for processing; then state should still be IDLE
-	var done1 = assert.async();
-	setTimeout(function() {
-		var state = $.cardswipe.state();
-		assert.equal(state, states.IDLE, "On non-% state is IDLE");
-		done1();
-	}, 0);
+	validateSequence(assert, stateSeq, lastly);
 });
 
 
-QUnit.test("Keypress: %B", function(assert) {
+QUnit.test("Sequence: A", function(assert) {
+	expect(2);
+
+	$.cardswipe();
+
+	assert.stateIs(allStates.IDLE, "Initial state is IDLE");
+	var stateSeq = [ new Key('A', allStates.IDLE)];
+
+	validateSequence(assert, stateSeq);
+});
+
+
+QUnit.test("Sequence: %B with timeout", function(assert) {
 	expect(4);
 
 	var timeout = 100;
 	$.cardswipe({ enable: true, interdigitTimeout: timeout, parsers: [] });
 
-	var states = $.cardswipe.states();
-	var initialState = $.cardswipe.state();
+	assert.stateIs(allStates.IDLE, "Initial state is IDLE");
 
-	assert.equal(initialState, states.IDLE, "Initial state is IDLE");
+	var stateSeq = [
+		new Key('%', allStates.PENDING),
+		new Key('B', allStates.READING)
+	];
 
-	// Send a % character
-	var event1 = $.Event("keypress", { which: 37 });
-	$("body").trigger(event1);
-	
-	// setTimeout allows for processing; then state should be PENDING
-	var done1 = assert.async();
-	setTimeout(function() {
-		var state = $.cardswipe.state();
-		assert.equal(state, states.PENDING, "On %, state is PENDING");
-		done1();
-	
-		// Send a B character
-		var event2 = $.Event("keypress", { which: 66 });
-		$("body").trigger(event2);
+	var lastly = timeoutToState(assert, timeout, allStates.IDLE);
 
-		// setTimeout allows for processing; then state should be READING
-		var done2 = assert.async();
-		setTimeout(function () {
-			var state = $.cardswipe.state();
-			assert.equal(state, states.READING, "On B, state is READING");
-			done2();
+	validateSequence(assert, stateSeq, lastly);
+});	
 
-			// Wait long enough for timeout. State should be IDLE again.
-			var done3 = assert.async();
-			setTimeout(function () {
-				var state = $.cardswipe.state();
-				assert.equal(state, states.IDLE, "On timeout state is IDLE");
-				done3();
-			}, timeout + 1);
-		}, 0);
-	}, 0);
-});
 
 QUnit.test("Prefix settings", function(assert) {
 	$.cardswipe({ prefixCharacter: "!" });
-	var settings = $.cardswipe.settings();
+	var settings = $.cardswipe._settings();
 	assert.equal(settings.prefixCode, 33);
 });
 
-QUnit.test("Prefix keypress: !", function(assert) {
+
+QUnit.test("Prefix sequence: !", function(assert) {
 
 	var timeout = 100;
 	var prefix = "!";
 	$.cardswipe({ enable: true, prefixCharacter: prefix, interdigitTimeout: timeout, parsers: []});
 
-	var states = $.cardswipe.states();
-	var initialState = $.cardswipe.state();
+	assert.stateIs(allStates.IDLE, "Initial state is IDLE");
 
-	assert.equal(initialState, states.IDLE, "Initial state is IDLE");
+	var stateSeq = [
+		new Key(prefix, allStates.PREFIX)
+	];
 
-	// Send a ! character
-	var event1 = $.Event("keypress", { which: 33 });
-	$("body").trigger(event1);
-	
-	// setTimeout allows for processing; then state should be PREFIX
-	var done1 = assert.async();
-	setTimeout(function() {
-		var state = $.cardswipe.state();
-		assert.equal(state, states.PREFIX, "On %, state is PREFIX");
-		done1();
-	});
+	var lastly = timeoutToState(assert, timeout, allStates.IDLE);
+
+	validateSequence(assert, stateSeq, lastly);
 });
 
 
-QUnit.test("Prefix keypress: !A%", function(assert) {
+QUnit.test("Prefix sequence: !PREFIX%", function(assert) {
 	var timeout = 100;
 	$.cardswipe({enable: true, prefixCharacter: "!", interdigitTimeout: timeout, parsers: []});
 
-	var states = $.cardswipe.states();
+	assert.stateIs(allStates.IDLE, "Initial state is IDLE");
 
-	assert.equal($.cardswipe.state(), states.IDLE, "Initial state is IDLE");
+	var stateSeq = [
+		new Key('!', allStates.PREFIX),
+		new Key('P', allStates.PREFIX),
+		new Key('R', allStates.PREFIX),
+		new Key('E', allStates.PREFIX),
+		new Key('F', allStates.PREFIX),
+		new Key('I', allStates.PREFIX),
+		new Key('X', allStates.PREFIX),
+		new Key('%', allStates.PENDING)
+	];
 
-	// Send "!"
-	$("body").trigger($.Event("keypress", { which: 33 }));
-	
-	// setTimeout allows for processing; then state should be PREFIX
-	var done1 = assert.async();
-	setTimeout(function() {
-		assert.equal($.cardswipe.state(), states.PREFIX, "On !, state is PREFIX");
-		done1();
-
-		// Send "A"
-		$("body").trigger($.Event("keypress", { which: 65 }));
-		var done2 = assert.async();
-		setTimeout(function() {
-			assert.equal($.cardswipe.state(), states.PREFIX, "On A, state remains PREFIX");
-			done2();
-
-			// Send "%"
-			$("body").trigger($.Event("keypress", { which: 37 }));
-			var done3 = assert.async();
-			setTimeout(function() {
-				assert.equal($.cardswipe.state(), states.PENDING, "On %, state is PENDING");
-				done3();
-			});
-		});
-	});
-
+	validateSequence(assert, stateSeq);
 });
+
 
 QUnit.test("Start enabled then disable", function(assert) {
 	$.cardswipe({ enabled: true, parsers: []});
 
-	var states = $.cardswipe.states();
-	assert.equal($.cardswipe.state(), states.IDLE, "Initial state is IDLE");
+	assert.stateIs(allStates.IDLE, "Initial state is IDLE");
 
-	// Send %
-	$("body").trigger($.Event("keypress", { which: 37 }));
-	var done1 = assert.async();
-	setTimeout(function() {
-		assert.equal($.cardswipe.state(), states.PENDING, "When enabled, state changes");
-		done1();
-
-		// Disable, and send B
+	// Function to disable the plugin
+	var disable = function(assert) {
 		$.cardswipe("disable");
-		$("body").trigger($.Event("keypress", { which: 66 }));
-		var done2 = assert.async();
-		setTimeout(function() {
-			assert.equal($.cardswipe.state(), states.PENDING, "When disabled, state remains unchanged");
-			done2();
-		});
-	});
+		assert.ok(true, "Disabled");
+	};
+
+	var stateSeq = [
+		new Key("%", allStates.PENDING, disable),
+		new Key("B", allStates.PENDING)
+	];
+
+	validateSequence(assert, stateSeq);
 });
+
 
 QUnit.test("Start disabled then enable", function(assert) {
 	$.cardswipe({enabled: false, parsers: []});
 
-	var states = $.cardswipe.states();
-	assert.equal($.cardswipe.state(), states.IDLE, "Initial state is IDLE");
+	assert.stateIs(allStates.IDLE, "Initial state is IDLE");
 
-	// Send %
-	$("body").trigger($.Event("keypress", { which: 37 }));
-	var done1 = assert.async();
-	setTimeout(function() {
-		assert.equal($.cardswipe.state(), states.IDLE, "When disabled, state remains IDLE");
-		done1();
-
-		// Enable, and send another %
+	var enable = function(assert) {
 		$.cardswipe("enable");
-		$("body").trigger($.Event("keypress", { which: 37 }));
-		var done2 = assert.async();
-		setTimeout(function() {
-			assert.notEqual($.cardswipe.state(), states.IDLE, "When enabled, state changes");
-			done2();
-		});
-	});
+		assert.ok(true, "Enabled");
+	};
+
+	var stateSeq = [
+		new Key('%', allStates.IDLE, enable),
+		new Key('%', allStates.PENDING)
+	];
+
+	validateSequence(assert, stateSeq);
 });
 
-/*
-QUnit.test("Ordinary keypress not suppressed", function (assert) {
-	expect(2);
 
-	$.cardswipe({ enable: true });
+QUnit.test("Sequence: %B654321^DOE/JOHN? accepted by generic parser", function(assert) {
 
-	var keypressCounter = 0;
-	var lastWhich;
 
-	// Remove all event handlers from input, and attach a new one.
-	$("#textbox")
-		.off()
-		.on("keypress", function (e) {
-			keypressCounter++;
-			lastWhich = e.which;
-		})
-		.focus()
-		;
-
-	// Send 'A' character
-	$("#textbox").trigger($.Event("keypress", { which: 65 }));
 	var done = assert.async();
-	setTimeout(function () {
-		assert.equal(keypressCounter, 1, "One keypress received");
-		assert.equal(lastWhich, 65, "Correct character");
+
+	// Callback function receiving parsed data
+	var callback = function(data) {
+		assert.equal(data.type, "generic", "Generic parser invoked");
+		assert.equal(data.line1, "B654321^DOE/JOHN", "Parser captured data, stripping delimiters");
 		done();
-	});
+	};
 
+	var stateSeq = [
+		new Key('%', allStates.PENDING),
+		new Key('B', allStates.READING),
+		new Key('6', allStates.READING),
+		new Key('5', allStates.READING),
+		new Key('4', allStates.READING),
+		new Key('3', allStates.READING),
+		new Key('2', allStates.READING),
+		new Key('1', allStates.READING),
+		new Key('^', allStates.READING),
+		new Key('D', allStates.READING),
+		new Key('O', allStates.READING),
+		new Key('E', allStates.READING),
+		new Key('/', allStates.READING),
+		new Key('J', allStates.READING),
+		new Key('O', allStates.READING),
+		new Key('H', allStates.READING),
+		new Key('N', allStates.READING),
+		new Key('?', allStates.READING)
+	];
+
+	$.cardswipe({ enabled: true, parsers: [ "generic" ], complete: callback });
+	assert.stateIs(allStates.IDLE, "Initial state is IDLE");
+	validateSequence(assert, stateSeq);
 });
-*/
-
-/*
 
 
-QUnit.test("Keypress enters character", function(assert) {
-	$("#textbox").off();
-	$("#textbox").trigger($.Event("keypress", { which: 37, charCode: 37 }));
-	assert.equal($("#textbox").val(), "%");
+QUnit.test("Luhn checksum", function(assert) {
 
+	var luhn = $.cardswipe.luhnChecksum;
+
+	// Fail except when last digit is correct
+	assert.notOk(luhn('79927398710'));
+	assert.notOk(luhn('79927398711'));
+	assert.notOk(luhn('79927398712'));
+	assert.ok(luhn('79927398713'));
+	assert.notOk(luhn('79927398714'));
+	assert.notOk(luhn('79927398715'));
+	assert.notOk(luhn('79927398716'));
+	assert.notOk(luhn('79927398717'));
+	assert.notOk(luhn('79927398718'));
+	assert.notOk(luhn('79927398719'));
 });
-*/
-
-/*
-
-QUnit.test("Keypress: %%", function (assert) {
-	expect(4);
-
-	$.cardswipe({ enable: true, debug: true });
-
-	// Counts kepresses received by form control
-	var keypressCounter = 0;
-	var lastEvent = 0;
-
-	// Remove any existing handler on textbox and bind a new one
-	$("#textbox")
-		.off()
-		.on("keypress", function (e) {
-			keypressCounter++;
-			lastEvent = e;
-			console.log('Event: ' + e);
-		})
-		.focus()
-	;
-
-	var states = $.cardswipe("States");
-	var initialState = $.cardswipe("_getState");
-
-	assert.equal(initialState, states.IDLE, "Initial state is IDLE");
-
-	// Send a % character
-	$("body").trigger($.Event("keypress", { which: 37 }));
-
-	var done1 = assert.async();
-	setTimeout(function () {
-		var state = $.cardswipe("_getState");
-		assert.equal(state, states.PENDING, "On first %, state is PENDING");
-		//assert.equal($("#textbox").val(), "", "Textbox is empty");
-		//assert.equal(keypressCounter, 0, "First % is suppressed");
-		done1();
-
-		// Send another % character
-		$("body").trigger($.Event("keypress", { which: 37 }));
-
-		var done2 = assert.async();
-		setTimeout(function () {
-			var state = $.cardswipe("_getState");
-			assert.equal(state, states.IDLE, "On second %, state is IDLE");
-			//assert.equal($("#textbox").val(), "%", "Textbox contains %");
-			assert.equal(keypressCounter, 1, "Second % is not suppressed");
-			//assert.equal(lastWhich, 37, "Correct character")
-			done2();
-		});
-	});
-});
-*/
-
 

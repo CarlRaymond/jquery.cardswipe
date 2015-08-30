@@ -1,4 +1,4 @@
-/*! jQuery.CardSwipe Magnetic Stripe Card Reader - v1.0.1 - 2015-08-29
+/*! jQuery.CardSwipe Magnetic Stripe Card Reader - v1.0.1 - 2015-08-30
 * https://github.com/CarlRaymond/jquery.cardswipe
 * Copyright (c) 2015 Carl J. Raymond; Licensed GPLv2 */
 // A jQuery plugin to detect magnetic card swipes.  Requires a card reader that simulates a keyboard.
@@ -70,7 +70,7 @@
 			if (!match) return null;
 
 			var account = match[1];
-			if (!luhnCheck(account))
+			if (!luhnChecksum(account))
 				return null;
 
 			var cardData = {
@@ -94,7 +94,7 @@
 			if (!match) return null;
 
 			var account = match[1];
-			if (!luhnCheck(account))
+			if (!luhnChecksum(account))
 				return null;
 
 			var cardData = {
@@ -118,7 +118,7 @@
 			if (!match) return null;
 
 			var account = match[1];
-			if (!luhnCheck(account))
+			if (!luhnChecksum(account))
 				return null;
 
 			var cardData = {
@@ -401,7 +401,7 @@
 
 	// Apply the Luhn checksum test.  Returns true on a valid account number.
 	// The input is assumed to be a string containing only digits.
-	var luhnCheck = function (digits) {
+	var luhnChecksum = function (digits) {
 		var map = [0, 2, 4, 6, 8, 1, 3, 5, 7, 9];
 		var sum = 0;
 
@@ -458,31 +458,38 @@
 		}
 	};
 
+	// The Luhn checksum function is available to the client if needed.
+	plugin.luhnChecksum = luhnChecksum;
+
 	// Attach internal functions to plugin for easier testing. These aren't intended for
-	// use in production.
-	plugin.luhnCheck = luhnCheck;
+	// use in production, hence the underscore security.
 
 	// Get all states
-	plugin.states = function() {
+	plugin._states = function() {
 		return states;
 	};
 
+	// Get names of states
+	plugin._stateNames = function() {
+		return stateNames;
+	};
+
 	// Read-only access to the current state
-	plugin.state = function() {
+	plugin._state = function() {
 		return state();
 	};
 
 	// Read-only access to the settings supplied to init method
-	plugin.settings = function() {
+	plugin._settings = function() {
 		return settings;
 	};
 
 	// Invoke parsers on supplied data
-	plugin.parseData = function(data) {
+	plugin._parseData = function(data) {
 		return parseData(data);
 	};
 
-	plugin.builtinParsers = function() {
+	plugin._builtinParsers = function() {
 		return builtinParsers;
 	};
 

@@ -29,7 +29,7 @@ module.exports = function(grunt) {
         options: {
           jshintrc: 'src/.jshintrc'
         },
-        src: ['src/**/*.js']
+        src: ['src/**/*.js', 'test/**/*.js']
       },
     },
 
@@ -83,7 +83,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-less');
   grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-contrib-qunit');
 
   grunt.registerTask('default', ['build',]);
   grunt.registerTask('build', ['jshint', 'clean', 'concat', 'uglify', 'less']);
