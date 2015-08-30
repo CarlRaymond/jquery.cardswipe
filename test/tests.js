@@ -31,10 +31,11 @@ function keypressFor(key) {
 // state verification.
 // Then it recursively invokes itself on the tail of the list. 
 //
-// seq is an array of objects with 'char' and 'state' properties. 'char' is a string
-// containing the character to send, and 'state' is the corresponding state that
-// the FSM should be in after processing the character. The optional 'then' property
-// will be executed after verifying the state. It is passed the assert object.
+// seq is an array of objects with 'key' and 'state' properties. 'key' is a string
+// containing the character to send a keypress for, and 'state' is the corresponding
+// state that the FSM should be in after processing the character. The optional 'then'
+// property is a function that will be executed after verifying the state. It is invoked
+// with the assert object as its argument.
 //
 // If a 'lastly' function is supplied, it will be invoked after processing the
 // sequence, to make final assertions or whatnot.
@@ -72,7 +73,7 @@ function validateSequence(assert, seq, lastly) {
 			thendone();
 		}
 
-		// Recursively invoke on tail
+		// Recursively invoke on tail of sequnce
 		validateSequence(assert, tail, lastly);
 	});
 }
