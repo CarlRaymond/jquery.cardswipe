@@ -3,7 +3,7 @@
 var allStates = $.cardswipe._states();
 var stateNames = $.cardswipe._stateNames();
 
-// Custom assertion that verifies the state of the plugin
+// Custom assertion that verifies the state of the FSM
 QUnit.assert.stateIs = function(expectedState, message) {
 
 	var state = $.cardswipe._state();
@@ -21,15 +21,16 @@ function keypressFor(key) {
 }
 
 
-// Used by tests that need to simulate multiple keypress events.
+// Used by tests that need to simulate multiple keypress events and validate
+// the intermediate states.
 // Simulates a sequence of character keypresses, and verifies that after each
-// the state is as specified. Argument 'seq' is an array of objects, with
-// properties 'char' and 'state'.
-// Sends a keypress event corresponding to the character at the head of the list, and
-// verifies the state transitions to the corresponding value. Becuase this requires
-// letting the event handlers execute, it uses the "setTimeout trick" to queue up the
-// state verification.
-// Then it recursively invokes itself on the tail of the list. 
+// the state is as specified. Optionally a function can be executed after the
+// state validation to perform final assertions or actions.
+//
+// Verifying that an event handler is invoked cannot be done immediately after
+// raising the event, since the handler code is queued to execute at a later time.
+// This function uses the "setTimeout trick" to queue up the state verification,
+// with a 0 timeout delay.
 //
 // seq is an array of objects with 'key' and 'state' properties. 'key' is a string
 // containing the character to send a keypress for, and 'state' is the corresponding
@@ -37,6 +38,9 @@ function keypressFor(key) {
 // property is a function that will be executed after verifying the state. It is invoked
 // with the assert object as its argument.
 //
+// The head element of the sequence is peeled off and acted upon, and then
+// the function recurses with the tail of the list.
+
 // If a 'lastly' function is supplied, it will be invoked after processing the
 // sequence, to make final assertions or whatnot.
 function validateSequence(assert, seq, lastly) {
@@ -58,28 +62,27 @@ function validateSequence(assert, seq, lastly) {
 
 	// Send keypress, verify resulting state.
 	$("body").trigger(keypressFor(head.key));
-	var done = assert.async();
 
 	// Allow for the handler to execute. Queue the validation with setTimeout.
+	var done = assert.async();
 	setTimeout(function() {
 		var message = "After '" + head.key + "' state is " + stateNames[head.state];
 		assert.stateIs(head.state, message);
-		done();
 
 		// Execute the "then" function, if it exists
 		if (head.then) {
-			var thendone = assert.async();
 			head.then(assert);
-			thendone();
 		}
 
-		// Recursively invoke on tail of sequnce
+		done();
+
+		// Recurse on tail of sequnce
 		validateSequence(assert, tail, lastly);
 	});
 }
 
-// Helper that waits a specified interval, then verifies the FSM state.
-// This returns a function that can be used as the 'lastly' argument
+// Helper that returns a function that waits a specified interval,
+// then verifies the FSM state. This can be used as the 'lastly' argument
 // of validateSequence.
 function timeoutToState(assert, interval, state) {
 
@@ -119,81 +122,6 @@ QUnit.test("plugin starts in IDLE", function(assert) {
 });
 
 
-QUnit.test("Generic parser", function(assert) {
-	$.cardswipe();
-
-	var testData = '%B6009050000000000^SIMPSON/HOMER J           ^0000000X11111111100000000000000?;6009050000000000=00000002411111111100?\n';
-
-	var parser = $.cardswipe._builtinParsers().generic;
-	var result = parser(testData);
-
-	var expected = {
-		type: "generic",
-		line1: "B6009050000000000^SIMPSON/HOMER J           ^0000000X11111111100000000000000",
-		line2: "6009050000000000=00000002411111111100",
-		line3: ""
-	};
-	assert.deepEqual(expected, result);
-});
-
-
-QUnit.test("Visa parser", function(assert) {
-	$.cardswipe();
-	var testData = "%B4111111111111111^DOE/JANE^1805101000000000000000503000000?";
-	var parser = $.cardswipe._builtinParsers().visa;
-	var result = parser(testData);
-
-	var expected = {
-		type: "visa",
-		account: "4111111111111111",
-		lastName: "DOE",
-		firstName: "JANE",
-		expYear: "18",
-		expMonth: "05"
-	};
-
-	assert.deepEqual(expected, result);
-});
-
-
-QUnit.test("Mastercard parser", function(assert) {
-	$.cardswipe();
-	var testData = "%B5555555555554444^DOE/JANE^1805101000000000000000503000000?";
-	var parser = $.cardswipe._builtinParsers().mastercard;
-	var result = parser(testData);
-
-	var expected = {
-		type: "mastercard",
-		account: "5555555555554444",
-		lastName: "DOE",
-		firstName: "JANE",
-		expYear: "18",
-		expMonth: "05"
-	};
-
-	assert.deepEqual(expected, result);
-});
-
-
-QUnit.test("American Express parser", function(assert) {
-	$.cardswipe();
-	var testData = "%B378282246310005^DOE/JANE^1805101000000000000000503000000?";
-	var parser = $.cardswipe._builtinParsers().amex;
-	var result = parser(testData);
-
-	var expected = {
-		type: "amex",
-		account: "378282246310005",
-		lastName: "DOE",
-		firstName: "JANE",
-		expYear: "18",
-		expMonth: "05"
-	};
-
-	assert.deepEqual(expected, result);
-});
-
-
 QUnit.test("Sequence: %", function(assert) {
 	expect(2);
 
@@ -205,6 +133,7 @@ QUnit.test("Sequence: %", function(assert) {
 	var stateSeq = [ new Key('%', allStates.PENDING) ];
 	validateSequence(assert, stateSeq);
 });
+
 
 QUnit.test("Sequence: % with timeout", function(assert) {
 	expect(3);
@@ -220,7 +149,7 @@ QUnit.test("Sequence: % with timeout", function(assert) {
 });
 
 
-QUnit.test("Sequence: A", function(assert) {
+QUnit.test("Sequence: A remains in IDLE", function(assert) {
 	expect(2);
 
 	$.cardswipe();
@@ -232,7 +161,7 @@ QUnit.test("Sequence: A", function(assert) {
 });
 
 
-QUnit.test("Sequence: %B with timeout", function(assert) {
+QUnit.test("Sequence: %B with timeout returns to IDLE", function(assert) {
 	expect(4);
 
 	var timeout = 100;
@@ -372,6 +301,81 @@ QUnit.test("Sequence: %B654321^DOE/JOHN? accepted by generic parser", function(a
 	$.cardswipe({ enabled: true, parsers: [ "generic" ], complete: callback });
 	assert.stateIs(allStates.IDLE, "Initial state is IDLE");
 	validateSequence(assert, stateSeq);
+});
+
+
+QUnit.test("Generic parser", function(assert) {
+	$.cardswipe();
+
+	var testData = '%B6009050000000000^SIMPSON/HOMER J           ^0000000X11111111100000000000000?;6009050000000000=00000002411111111100?\n';
+
+	var parser = $.cardswipe._builtinParsers().generic;
+	var result = parser(testData);
+
+	var expected = {
+		type: "generic",
+		line1: "B6009050000000000^SIMPSON/HOMER J           ^0000000X11111111100000000000000",
+		line2: "6009050000000000=00000002411111111100",
+		line3: ""
+	};
+	assert.deepEqual(expected, result);
+});
+
+
+QUnit.test("Visa parser", function(assert) {
+	$.cardswipe();
+	var testData = "%B4111111111111111^DOE/JANE^1805101000000000000000503000000?";
+	var parser = $.cardswipe._builtinParsers().visa;
+	var result = parser(testData);
+
+	var expected = {
+		type: "visa",
+		account: "4111111111111111",
+		lastName: "DOE",
+		firstName: "JANE",
+		expYear: "18",
+		expMonth: "05"
+	};
+
+	assert.deepEqual(expected, result);
+});
+
+
+QUnit.test("Mastercard parser", function(assert) {
+	$.cardswipe();
+	var testData = "%B5555555555554444^DOE/JANE^1805101000000000000000503000000?";
+	var parser = $.cardswipe._builtinParsers().mastercard;
+	var result = parser(testData);
+
+	var expected = {
+		type: "mastercard",
+		account: "5555555555554444",
+		lastName: "DOE",
+		firstName: "JANE",
+		expYear: "18",
+		expMonth: "05"
+	};
+
+	assert.deepEqual(expected, result);
+});
+
+
+QUnit.test("American Express parser", function(assert) {
+	$.cardswipe();
+	var testData = "%B378282246310005^DOE/JANE^1805101000000000000000503000000?";
+	var parser = $.cardswipe._builtinParsers().amex;
+	var result = parser(testData);
+
+	var expected = {
+		type: "amex",
+		account: "378282246310005",
+		lastName: "DOE",
+		firstName: "JANE",
+		expYear: "18",
+		expMonth: "05"
+	};
+
+	assert.deepEqual(expected, result);
 });
 
 
