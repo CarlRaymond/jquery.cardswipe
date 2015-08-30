@@ -32,9 +32,6 @@
 		}
 	};
 
-	// Attach plugin to jQuery object.
-	$.cardswipe = plugin;
-
 	// Built-in parsers. These include simplistic credit card parsers that
 	// recognize various card issuers based on patterns of the account number.
 	// There is no guarantee these are correct or complete; they are based
@@ -338,8 +335,9 @@
 		}
 	};
 
+	// Invokes parsers until one succeeds, and returns the parsed result,
+	// or null if none succeed.
 	var parseData = function(rawData) {
-	  // Invoke client parsers until one succeeds, and return the parsed result.
 		for (var i = 0; i < settings.parsers.length; i++) {
 		  var ref = settings.parsers[i];
 		  var parser;
@@ -368,12 +366,12 @@
 
 	// Binds the event listener
 	var bindListener = function () {
-		$(document).on("keypress.cardswipe", listener);
+		$(document).on("keypress.cardswipe-listener", listener);
 	};
 
 	// Unbinds the event listener
 	var unbindListener = function () {
-		$(document).off(".cardswipe", listener);
+		$(document).off(".cardswipe-listener", listener);
 	};
 
 	// Default callback used if no other specified. Works with default parser.
@@ -454,31 +452,38 @@
 
 		enable: function () {
 			bindListener();
-		},
-
-		// Test helpers. These allow for easier testing of the plugin. These aren't intended
-		// for use in production.
-
-		_parseData: function(rawData) {
-			return parseData(rawData);
-		},
-
-		_getState: function() {
-			return currentState;
-		},
-
-		_getStates: function() {
-			return states;
-		},
-		
-		_getSettings: function() {
-			return settings;
-		},
-
-		_builtinParsers : function() {
-			return builtinParsers;
 		}
 	};
 
+	// Attach internal functions to plugin for easier testing. These aren't intended for
+	// use in production.
+	plugin.luhnCheck = luhnCheck;
+
+	// Get all states
+	plugin.states = function() {
+		return states;
+	};
+
+	// Read-only access to the current state
+	plugin.state = function() {
+		return state();
+	};
+
+	// Read-only access to the settings supplied to init method
+	plugin.settings = function() {
+		return settings;
+	};
+
+	// Invoke parsers on supplied data
+	plugin.parseData = function(data) {
+		return parseData(data);
+	};
+
+	plugin.builtinParsers = function() {
+		return builtinParsers;
+	};
+
+	// Attach plugin to jQuery object.
+	$.cardswipe = plugin;
 
 }));

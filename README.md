@@ -6,14 +6,27 @@ to the underlying page, so you can scan a card without regard to which control o
 
 ## What It Does Not Do
 While this plugin can scan a credit card or debit card account number, it does not validate or verify that data in any way,
-and cannot by itself process a credit card transaction.
+and cannot by itself process a credit card transaction. The plugin simply reads the data on the card. What you do with
+it is up to you.
 
-# How To Use It
+# Getting Started
+To use the plugin, include either `dist\jquery.cardswipe.js` or `dist\jquery.cardswipe.min.js` on your web page,
+after including jQuery version 1.7.2 or later. 
+
 If you are scanning credit cards like Visa, MasterCard, or American Express, there are built-in parsers within
 the plugin that can recognize those formats. A built-in generic parser will parse up to three lines of data.
+To scan private-use cards, like company or institutional ID cards, you'll need to create your own parser function,
+as described below.
+
+If you want to experiment with and further develop the plugin, you will need [https://nodejs.org/](Node.js) and NPM
+on your computer. Clone the repository, and in the root folder, run `npm install`. This will fetch the required
+Node packages. Then run `grunt` to execute the default build task. The command `grunt test` will execute the test
+suite, using the QUnit testing framework.
 
 # Sample Pages
 The sample page [demo-simple.html](demo-simple.html) shows a basic example of using the plugin with the builit-in parsers.
+
+# Events
 
 The plugin defines four custom events which are fired during the scanning process. They are
 `scanstart.cardswipe`, `scanend.cardswipe`, `success.cardswipe`, and `failure.cardswipe`.
@@ -25,7 +38,7 @@ of using event listeners.
 
 If you have trouble using your scanner and cards with the sample pages, try scanning a card into a
 plain-text editor like `vi` or `notepad`.  If the scanned data does not start with a `%` followed by
-a letter, this plugin will not be able to work with your cards and reader.  However, if the `%`
+a letter this plugin will not be able to work with your cards and reader.  However, if the `%`
 and a letter are present, but there is a consistent prefix ahead of it, you may be able to use the plugin
 by configuring the `prefixCharacter` property.  See an example below.
 
@@ -133,14 +146,17 @@ the DISCARD state to eat all subsequent characters until the end of the scan, wh
 Because the initial % character is supressed, if you need to manually enter a % character into a form, you
 must type two % characters in quick succession (within the timeout interval).
 
-On a successful scan, the plugin will invoke the parser function, passing the raw character data.  If the
-parser recognizes the format, it should return an object that encapsulates the data of interest.  Otherwise,
-the parser should return null. Then the plugin will invoke either the success callback, passing it the parsed
-object as a parameter, or it will invoke the error callback.
+On a successful scan, the plugin will invoke the parser functions in sequence, passing each the raw character
+data.  If a parser recognizes the format, it should return an object that encapsulates the data of interest.
+Otherwise, the parser should return null, in which case the plugin will try the next parser.
+When a parser succeeds, the the plugin will invoke either the complete callback, passing it the parsed
+object as a parameter. If no parser succeeds, the plugin will invoke the error callback. If you're not
+interested in this case, it is not necessary to define an error callback.
 
 #Special Cases
 Some card readers, like the Scriptel MagStripe, prefix the scanned data with a manufacturer-specific sequence.
-For the Scriptel, it's the string `!STCARD A `. To accommodate these readers, a prefix character can be set in
+For the Scriptel, it's the string `!STCARD A `. Following this is the usual `%B` sequence.
+To accommodate these readers, a prefix character can be set in
 the configuration. On seeing the prefix character, the state machine enters the PREFIX state, and consumes characters
 until a % character is seen, where we enter the PENDING state and proceed as before.  Indicate the prefix character
 in the initial configuration with the `prefixCharacter` property.  For example the prefix for the Scriptel is `!`:
@@ -148,7 +164,7 @@ in the initial configuration with the `prefixCharacter` property.  For example t
 ```
 $.cardswipe({
 	parsers: ["visa", "amex", "mastercard", companyCardParser],
-	success: goodScan,
+	complete: goodScan,
 	error: badScan,
 	firstLineOnly: false,
 	prefixCharacter: '!' });
