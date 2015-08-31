@@ -1,6 +1,6 @@
 
 // All states of FSM
-var allStates = $.cardswipe._states();
+var states = $.cardswipe._states();
 var stateNames = $.cardswipe._stateNames();
 
 // Custom assertion that verifies the state of the FSM
@@ -68,7 +68,7 @@ function validateSequence(assert, seq, lastly) {
 		var message = "After '" + head.key + "' state is " + stateNames[head.state];
 		assert.stateIs(head.state, message);
 
-		// Execute the "then" function, if it exists
+		// Execute the "then" function for this element, if any.
 		if (head.then) {
 			head.then(assert);
 		}
@@ -117,7 +117,7 @@ QUnit.test("plugin loaded on page", function (assert) {
 
 QUnit.test("plugin starts in IDLE", function(assert) {
 	$.cardswipe();
-	assert.stateIs(allStates.IDLE);
+	assert.stateIs(states.IDLE);
 });
 
 
@@ -127,9 +127,9 @@ QUnit.test("Sequence: %", function(assert) {
 	var timeout = 100;
 	$.cardswipe({ enable: true, interdigitTimeout: timeout });
 
-	assert.stateIs(allStates.IDLE, "Initial state is IDLE");
+	assert.stateIs(states.IDLE, "Initial state is IDLE");
 
-	var stateSeq = [ new Key('%', allStates.PENDING) ];
+	var stateSeq = [ new Key('%', states.PENDING) ];
 	validateSequence(assert, stateSeq);
 });
 
@@ -140,9 +140,9 @@ QUnit.test("Sequence: % with timeout", function(assert) {
 	var timeout = 100;
 	$.cardswipe({ enable: true, interdigitTimeout: timeout, parsers: []});
 
-	assert.stateIs(allStates.IDLE, "Initial state is IDLE");
-	var stateSeq = [ new Key('%', allStates.PENDING) ];
-	var lastly = timeoutToState(timeout, allStates.IDLE);
+	assert.stateIs(states.IDLE, "Initial state is IDLE");
+	var stateSeq = [ new Key('%', states.PENDING) ];
+	var lastly = timeoutToState(timeout, states.IDLE);
 
 	validateSequence(assert, stateSeq, lastly);
 });
@@ -153,8 +153,8 @@ QUnit.test("Sequence: A remains in IDLE", function(assert) {
 
 	$.cardswipe();
 
-	assert.stateIs(allStates.IDLE, "Initial state is IDLE");
-	var stateSeq = [ new Key('A', allStates.IDLE)];
+	assert.stateIs(states.IDLE, "Initial state is IDLE");
+	var stateSeq = [ new Key('A', states.IDLE)];
 
 	validateSequence(assert, stateSeq);
 });
@@ -166,14 +166,14 @@ QUnit.test("Sequence: %B with timeout returns to IDLE", function(assert) {
 	var timeout = 100;
 	$.cardswipe({ enable: true, interdigitTimeout: timeout, parsers: [] });
 
-	assert.stateIs(allStates.IDLE, "Initial state is IDLE");
+	assert.stateIs(states.IDLE, "Initial state is IDLE");
 
 	var stateSeq = [
-		new Key('%', allStates.PENDING),
-		new Key('B', allStates.READING)
+		new Key('%', states.PENDING),
+		new Key('B', states.READING)
 	];
 
-	var lastly = timeoutToState(timeout, allStates.IDLE);
+	var lastly = timeoutToState(timeout, states.IDLE);
 
 	validateSequence(assert, stateSeq, lastly);
 });	
@@ -192,13 +192,13 @@ QUnit.test("Prefix sequence: !", function(assert) {
 	var prefix = "!";
 	$.cardswipe({ enable: true, prefixCharacter: prefix, interdigitTimeout: timeout, parsers: []});
 
-	assert.stateIs(allStates.IDLE, "Initial state is IDLE");
+	assert.stateIs(states.IDLE, "Initial state is IDLE");
 
 	var stateSeq = [
-		new Key(prefix, allStates.PREFIX)
+		new Key(prefix, states.PREFIX)
 	];
 
-	var lastly = timeoutToState(timeout, allStates.IDLE);
+	var lastly = timeoutToState(timeout, states.IDLE);
 
 	validateSequence(assert, stateSeq, lastly);
 });
@@ -208,17 +208,17 @@ QUnit.test("Prefix sequence: !PREFIX%", function(assert) {
 	var timeout = 100;
 	$.cardswipe({enable: true, prefixCharacter: "!", interdigitTimeout: timeout, parsers: []});
 
-	assert.stateIs(allStates.IDLE, "Initial state is IDLE");
+	assert.stateIs(states.IDLE, "Initial state is IDLE");
 
 	var stateSeq = [
-		new Key('!', allStates.PREFIX),
-		new Key('P', allStates.PREFIX),
-		new Key('R', allStates.PREFIX),
-		new Key('E', allStates.PREFIX),
-		new Key('F', allStates.PREFIX),
-		new Key('I', allStates.PREFIX),
-		new Key('X', allStates.PREFIX),
-		new Key('%', allStates.PENDING)
+		new Key('!', states.PREFIX),
+		new Key('P', states.PREFIX),
+		new Key('R', states.PREFIX),
+		new Key('E', states.PREFIX),
+		new Key('F', states.PREFIX),
+		new Key('I', states.PREFIX),
+		new Key('X', states.PREFIX),
+		new Key('%', states.PENDING)
 	];
 
 	validateSequence(assert, stateSeq);
@@ -228,7 +228,7 @@ QUnit.test("Prefix sequence: !PREFIX%", function(assert) {
 QUnit.test("Start enabled then disable", function(assert) {
 	$.cardswipe({ enabled: true, parsers: []});
 
-	assert.stateIs(allStates.IDLE, "Initial state is IDLE");
+	assert.stateIs(states.IDLE, "Initial state is IDLE");
 
 	// Function to disable the plugin
 	var disable = function(assert) {
@@ -237,8 +237,8 @@ QUnit.test("Start enabled then disable", function(assert) {
 	};
 
 	var stateSeq = [
-		new Key("%", allStates.PENDING, disable),
-		new Key("B", allStates.PENDING)
+		new Key("%", states.PENDING, disable),
+		new Key("B", states.PENDING)
 	];
 
 	validateSequence(assert, stateSeq);
@@ -248,7 +248,7 @@ QUnit.test("Start enabled then disable", function(assert) {
 QUnit.test("Start disabled then enable", function(assert) {
 	$.cardswipe({enabled: false, parsers: []});
 
-	assert.stateIs(allStates.IDLE, "Initial state is IDLE");
+	assert.stateIs(states.IDLE, "Initial state is IDLE");
 
 	var enable = function(assert) {
 		$.cardswipe("enable");
@@ -256,8 +256,8 @@ QUnit.test("Start disabled then enable", function(assert) {
 	};
 
 	var stateSeq = [
-		new Key('%', allStates.IDLE, enable),
-		new Key('%', allStates.PENDING)
+		new Key('%', states.IDLE, enable),
+		new Key('%', states.PENDING)
 	];
 
 	validateSequence(assert, stateSeq);
@@ -277,28 +277,28 @@ QUnit.test("Sequence: %B654321^DOE/JOHN? accepted by generic parser", function(a
 	};
 
 	var stateSeq = [
-		new Key('%', allStates.PENDING),
-		new Key('B', allStates.READING),
-		new Key('6', allStates.READING),
-		new Key('5', allStates.READING),
-		new Key('4', allStates.READING),
-		new Key('3', allStates.READING),
-		new Key('2', allStates.READING),
-		new Key('1', allStates.READING),
-		new Key('^', allStates.READING),
-		new Key('D', allStates.READING),
-		new Key('O', allStates.READING),
-		new Key('E', allStates.READING),
-		new Key('/', allStates.READING),
-		new Key('J', allStates.READING),
-		new Key('O', allStates.READING),
-		new Key('H', allStates.READING),
-		new Key('N', allStates.READING),
-		new Key('?', allStates.READING)
+		new Key('%', states.PENDING),
+		new Key('B', states.READING),
+		new Key('6', states.READING),
+		new Key('5', states.READING),
+		new Key('4', states.READING),
+		new Key('3', states.READING),
+		new Key('2', states.READING),
+		new Key('1', states.READING),
+		new Key('^', states.READING),
+		new Key('D', states.READING),
+		new Key('O', states.READING),
+		new Key('E', states.READING),
+		new Key('/', states.READING),
+		new Key('J', states.READING),
+		new Key('O', states.READING),
+		new Key('H', states.READING),
+		new Key('N', states.READING),
+		new Key('?', states.READING)
 	];
 
 	$.cardswipe({ enabled: true, parsers: [ "generic" ], complete: callback });
-	assert.stateIs(allStates.IDLE, "Initial state is IDLE");
+	assert.stateIs(states.IDLE, "Initial state is IDLE");
 	validateSequence(assert, stateSeq);
 });
 
