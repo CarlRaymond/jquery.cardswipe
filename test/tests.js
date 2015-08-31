@@ -21,18 +21,17 @@ function keypressFor(key) {
 }
 
 
-// Used by tests that need to simulate multiple keypress events and validate
-// the intermediate states.
 // Simulates a sequence of character keypresses, and verifies that after each
-// the state is as specified. Optionally a function can be executed after the
-// state validation to perform final assertions or actions.
+// the state is as specified. Used by tests that need to simulate multiple keypress
+// events and validate the intermediate states. Optionally a 'lastly' function can
+// be executed after the state validation to perform final assertions or actions.
 //
 // Verifying that an event handler is invoked cannot be done immediately after
 // raising the event, since the handler code is queued to execute at a later time.
-// This function uses the "setTimeout trick" to queue up the state verification,
-// with a 0 timeout delay.
+// This function uses the "setTimeout trick" to queue up the state verification
+// resulting from raising a keypress event, with a 0 timeout delay.
 //
-// seq is an array of objects with 'key' and 'state' properties. 'key' is a string
+// 'seq' is an array of objects with 'key' and 'state' properties. 'key' is a string
 // containing the character to send a keypress for, and 'state' is the corresponding
 // state that the FSM should be in after processing the character. The optional 'then'
 // property is a function that will be executed after verifying the state. It is invoked
@@ -84,7 +83,7 @@ function validateSequence(assert, seq, lastly) {
 // Helper that returns a function that waits a specified interval,
 // then verifies the FSM state. This can be used as the 'lastly' argument
 // of validateSequence.
-function timeoutToState(assert, interval, state) {
+function timeoutToState(interval, state) {
 
 	var func = function(assert) {
 		var done = assert.async();
@@ -143,7 +142,7 @@ QUnit.test("Sequence: % with timeout", function(assert) {
 
 	assert.stateIs(allStates.IDLE, "Initial state is IDLE");
 	var stateSeq = [ new Key('%', allStates.PENDING) ];
-	var lastly = timeoutToState(assert, timeout, allStates.IDLE);
+	var lastly = timeoutToState(timeout, allStates.IDLE);
 
 	validateSequence(assert, stateSeq, lastly);
 });
@@ -174,7 +173,7 @@ QUnit.test("Sequence: %B with timeout returns to IDLE", function(assert) {
 		new Key('B', allStates.READING)
 	];
 
-	var lastly = timeoutToState(assert, timeout, allStates.IDLE);
+	var lastly = timeoutToState(timeout, allStates.IDLE);
 
 	validateSequence(assert, stateSeq, lastly);
 });	
@@ -199,7 +198,7 @@ QUnit.test("Prefix sequence: !", function(assert) {
 		new Key(prefix, allStates.PREFIX)
 	];
 
-	var lastly = timeoutToState(assert, timeout, allStates.IDLE);
+	var lastly = timeoutToState(timeout, allStates.IDLE);
 
 	validateSequence(assert, stateSeq, lastly);
 });
