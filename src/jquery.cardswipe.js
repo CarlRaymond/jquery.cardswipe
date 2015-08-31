@@ -49,9 +49,9 @@
 				// Extract the three lines
 				var cardData = {
 					type: "generic",
-					line1: match[1] ? match[1].substr(1, match[1].length-2) : "",
-					line2: match[2] ? match[2].substr(1, match[2].length-2) : "",
-					line3: match[3] ? match[3].substr(1, match[3].length-2) : ""
+					line1: match[1] ? match[1].slice(1, -1) : "",
+					line2: match[2] ? match[2].slice(1, -1) : "",
+					line3: match[3] ? match[3].slice(1, -1) : ""
 				};
 
 				return cardData;
@@ -159,10 +159,10 @@
 
 		// Raise events when entering and leaving the READING state
 		if (newState == states.READING)
-			$(document).trigger("scanstart.cardswipe");
+			$eventSource.trigger("scanstart.cardswipe");
 
 		if (currentState == states.READING)
-			$(document).trigger("scanend.cardswipe");
+			$eventSource.trigger("scanend.cardswipe");
 
 		currentState = newState;
 	};
@@ -389,12 +389,17 @@
 		parsers: [ "generic" ],
 		firstLineOnly: false,
 		prefixCharacter: null,
+		eventSource: document,
 		debug: false
 	};
 
 	// Plugin actual settings
 	var settings;
 
+	// Element on which events are raised.
+	// Normally, this stays set to document, but setting it to another
+	// element makes testing easier.
+	var $eventSource;
 
 	// Apply the Luhn checksum test.  Returns true on a valid account number.
 	// The input is assumed to be a string containing only digits.
@@ -435,6 +440,8 @@
 				// Convert to character code
 				settings.prefixCode = settings.prefixCharacter.charCodeAt(0);
 			}
+
+			$eventSource = $(settings.eventSource);
 
 			// Reset state
 			clearTimer();
