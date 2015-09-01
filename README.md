@@ -1,3 +1,4 @@
+
 # What It Does
 This jQuery plugin is intended for use with a magnetic card reader that simulates a keyboard.  It allows a
 web application to interface with the reader so that scanning a card will trigger a callback function
@@ -52,12 +53,14 @@ the format of bank card numbers, see <http://en.wikipedia.org/wiki/Bank_card_num
 
 The data fileds on a line are typically separated by carets, and padded with spaces. Lines are separated by question marks,
 and the end of a scan is indicated by a carriage return character. Note that the exact format could vary between various
-models of card reader. My own experience is limited to the reader I have. I welcome additions and corrections to this information.
+models of card reader. My own experience is limited to the reader I have. I welcome additions and corrections to this
+ information.
 
 To determine the format of the card you're interested in, scan as many samples as you can into a plain text editor like
 vi or Notepad.
 
-For example, if you're scanning an employee or student identification card, the data on line 1 may look something like this:
+For example, if you're scanning an employee or student identification card, the data on line 1 may look something like 
+this:
 
 	%B6543210000000000^DOE/JOHN                  ^0000000000000000000ABC123456789?
 
@@ -70,8 +73,8 @@ The subsequent digits may be all zeroes or not; that's up to the issuer.  The ne
 `^`) encodes the last name and first name, separated with a slash, and right-padded with spaces. The third field is an
 employee or student ID number, here left padded with zeroes.  The final `?` indicates the end of the first line on the
 card, and there are no further lines.  Some cards may contain the same data on the second line, but with a different
-encoding. Only the first line will contain alphabetic characters; the other lines will consist of only of digits and a small
-number of punctuation characters.
+encoding. Only the first line will contain alphabetic characters; the other lines will consist of only of digits and a 
+small number of punctuation characters.
 
 # Custom Card Parsers
 For a private-use employee or student ID card like the example above, you will need to create your own
