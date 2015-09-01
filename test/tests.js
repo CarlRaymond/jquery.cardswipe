@@ -268,7 +268,39 @@ QUnit.test("Sequence: %B654321^DOE/JOHN? accepted by generic parser", function(a
 
 	var stateSeq = [ new Seq(rawdata) ];
 
-	$.cardswipe({ enabled: true, parsers: [ "generic" ], complete: callback });
+	$.cardswipe({ enabled: true, parsers: [ "generic" ], success: callback });
+	assert.stateIs(states.IDLE, "Initial state is IDLE");
+	validateSequence(assert, stateSeq);
+});
+
+
+QUnit.test("Rejected scan invokes failure callback with raw data", function(assert) {
+
+
+	// Custom parser rejects everything.
+	var parserDone = assert.async();
+	var mikey = function(rawData) {
+		assert.ok(true, "Parser received raw data: " + rawData);
+		parserDone();
+		return null;
+	};
+
+	// Success callback. Should not be called.
+	var success = function(parsedData) {
+		assert.ok(false, "Success callback invoked incorrectly with parsed data: " + parsedData);
+	};
+
+	// Failure callback.
+	var failureDone = assert.async();
+	var failure = function(scanData) {
+		assert.equal(scanData, rawData, "Error callback invoked with scanned data");
+		failureDone();
+	};
+
+	var rawData = "%B654321^DOE/JOHN?";
+	var stateSeq = [ new Seq(rawData)];
+	$.cardswipe({ enabled: true, parsers: [ mikey ], success: success, failure: failure});
+
 	assert.stateIs(states.IDLE, "Initial state is IDLE");
 	validateSequence(assert, stateSeq);
 });
@@ -395,7 +427,7 @@ QUnit.module("Event triggers",
 QUnit.test("success event triggered", function(assert) {
 	var done = assert.async();
 
-	// Callback for complete event
+	// Callback for success event
 	var handler = function(event, data) {
 		assert.equal(event.type, "success", "Handler invoked with success event");
 		assert.equal(data.type, "generic", "Handler invoked with generic parsed data");
@@ -403,7 +435,7 @@ QUnit.test("success event triggered", function(assert) {
 	};
 
 	var timeout = 100;
-	$.cardswipe({ enabled: true, interdigitTimeout: timeout, parsers: [ "generic"], complete: null });
+	$.cardswipe({ enabled: true, interdigitTimeout: timeout, parsers: [ "generic"], success: null });
 	$(document).on("success.cardswipe", handler);
 
 	var seq = [ new Seq('%B654321^DOE/JOHN?') ];
@@ -422,7 +454,7 @@ QUnit.test("failure event triggered", function(assert) {
 	};
 
 	var timeout = 100;
-	$.cardswipe({ enabled: true, interdigitTimeout: timeout, parsers: [], complete: null });
+	$.cardswipe({ enabled: true, interdigitTimeout: timeout, parsers: [], success: null });
 	$(document).on("failure.cardswipe", handler);
 
 	var seq = [ new Seq('%BXXX') ];

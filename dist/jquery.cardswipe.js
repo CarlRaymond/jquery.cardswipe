@@ -1,6 +1,6 @@
-/*! jQuery.CardSwipe Magnetic Stripe Card Reader - v1.0.1 - 2015-08-31
+/*! jQuery.CardSwipe Magnetic Stripe Card Reader - v1.0.1 - 2015-09-01
 * https://github.com/CarlRaymond/jquery.cardswipe
-* Copyright (c) 2015 Carl J. Raymond; Licensed GPLv2 */
+* Copyright (c) 2015 Carl J. Raymond; Licensed MIT */
 // A jQuery plugin to detect magnetic card swipes.  Requires a card reader that simulates a keyboard.
 // This expects a card that encodes data on track 1, though it also reads tracks 2 and 3.  Most cards
 // use track 1.  This won't recognize cards that don't use track 1, or work with a reader that
@@ -325,7 +325,7 @@
 
 		if (result) {
 			// Scan complete. Invoke callback
-			if (settings.complete) { settings.complete.call(this, result); }
+			if (settings.success) { settings.success.call(this, result); }
 
 			// Raise success event.
 			$(document).trigger("success.cardswipe", result);
@@ -333,7 +333,7 @@
 		else
 		{
 			// All parsers failed.
-			if (settings.error) { settings.error.call(this, rawData); }
+			if (settings.failure) { settings.failure.call(this, rawData); }
 			$(document).trigger("failure.cardswipe");
 		}
 	};
@@ -378,7 +378,7 @@
 	};
 
 	// Default callback used if no other specified. Works with default parser.
-	var defaultCompleteCallback = function (cardData) {
+	var defaultSuccessCallback = function (cardData) {
 		var text = ['Line 1: ', cardData.line1, '\nLine 2: ', cardData.line2, '\nLine 3: ', cardData.line3].join('');
 		alert(text);
 	};
@@ -387,8 +387,8 @@
 	var defaults = {
 		enabled: true,
 		interdigitTimeout: 250,
-		complete: defaultCompleteCallback,
-		error: null,
+		success: defaultSuccessCallback,
+		failure: null,
 		parsers: [ "generic" ],
 		firstLineOnly: false,
 		prefixCharacter: null,

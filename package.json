@@ -19,13 +19,10 @@
   "keywords": [
     "jquery-plugin",
     "ecosystem:jquery",
-    "plugin",
-    "magentic",
-    "stripe",
-    "card",
-    "reader"
+    "magentic stripe",
+    "card reader"
   ],
-  "license": "GPLv2",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/CarlRaymond/jquery.cardswipe/issues"
   },

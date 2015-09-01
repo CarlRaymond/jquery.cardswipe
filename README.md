@@ -1,15 +1,14 @@
+# jQuery.cardswipe
 
-# What It Does
+## What It Does
 This jQuery plugin is intended for use with a magnetic card reader that simulates a keyboard.  It allows a
 web application to interface with the reader so that scanning a card will trigger a callback function
 which can then act on the scanned data.  Scanning a card will not result in keyboard events getting through
 to the underlying page, so you can scan a card without regard to which control on the page has focus.
 
-## What It Does Not Do
-While this plugin can scan a credit card or debit card account number, it does not validate or verify that data in any
-way. The plugin simply reads the data on the card. What you do with it is up to you.
+Note that while this plugin can scan a credit card or debit card account number, it does not validate or verify that data in any way (except for the standard Luhn checksum on account numbers). The plugin simply reads the data on the card. What you do with it is up to you.
 
-# Getting Started
+## Getting Started
 To use the plugin, include either `dist\jquery.cardswipe.js` or `dist\jquery.cardswipe.min.js` on your web page,
 after including jQuery version 1.7.2 or later. 
 
@@ -19,21 +18,20 @@ To scan private-use cards, like company or institutional ID cards, you'll need t
 as described below.
 
 ## Developing
-If you want to experiment with and further develop the plugin, you will need [https://nodejs.org/](Node.js) and NPM
-on your computer. Fork and clone the repository, and in the root folder, run `npm install`. This will fetch the required
-Node packages. Then run `grunt` to execute the default build task. The command `grunt test` will execute the test
-suite, using the QUnit testing framework.
+If you want to experiment with and further develop the plugin, you will need [https://nodejs.org/](Node.js), NPM
+and grunt on your computer. Fork and clone the repository, and in the root folder, run `npm install`. This will
+fetch the required Node packages. Then run `grunt` to execute the default build task. The command `grunt test` will execute the test suite, using the QUnit testing framework.
 
-# Sample Pages
+## Sample Pages
 The sample page [demo-simple.html](demo-simple.html) shows a basic example of using the plugin with the builit-in
-parsers.
+parsers. The page [demo-events.html](demo-events.html) shows an example that binds to the events to 
 
-# Events
+## Events
 The plugin defines four custom events which are fired during the scanning process. They are
 `scanstart.cardswipe`, `scanend.cardswipe`, `success.cardswipe`, and `failure.cardswipe`.
 You can bind listeners to these events to update your page's user interface to provide visual feedback
 about the scan. The `success.cardswipe` event handler will receive two parameters, the `event` object
-and the scanned data. This is the same data that is passed to the `complete` callback. The callback
+and the scanned data. This is the same data that is passed to the `success` callback. The callback
 is invoked first, and then the event is fired. The sample page [demo-events.html](demo-events.html) shows an example
 of using event listeners.
 
@@ -43,7 +41,7 @@ a letter this plugin will not be able to work with your cards and reader.  Howev
 and a letter are present, but there is a consistent prefix ahead of it, you may be able to use the plugin
 by configuring the `prefixCharacter` property.  See an example below.
 
-# Card Formats
+## Card Formats
 Magnetic cards encode data in up to three tracks.  This expects a card that encodes data on track 1, though
 it also reads tracks 2 and 3.  Most cards use track 1.  This won't recognize cards that don't use track 1,
 or work with a reader that doesn't read track 1.
@@ -76,13 +74,13 @@ card, and there are no further lines.  Some cards may contain the same data on t
 encoding. Only the first line will contain alphabetic characters; the other lines will consist of only of digits and a 
 small number of punctuation characters.
 
-# Custom Card Parsers
+## Custom Card Parsers
 For a private-use employee or student ID card like the example above, you will need to create your own
 parser function to extract the various data fields you are interested in. The parser will be invoked with a
 single string argument containing the raw scanned characters from the card. Typically you'll use a regular expression
 to recognize your cards and extract the relevant data. On a successful scan, your parser should return an object with
 a property for each field of interest. This will cause the plugin to invoke the successful scan event and the
-`complete` callback, passing it the object.
+`success` callback, passing it the object.
 
 If your parser does not recognize the raw data, it should return `null`, which will cause the plugin to move
 on to the next defined parser, if any. If no configured parser recognizes the data, the plugin will invoke
@@ -111,7 +109,7 @@ var exampleParser = function (rawData) {
 // Configure the plugin to use the parser, with the built-in generic parser as a backup:
 $.cardswipe({
 	firstLineOnly: true,
-	complete: complete,
+	success: successCallback,
 	parsers: [ exampleParser, "generic" ],
 	error: error,
 	debug: true
@@ -127,7 +125,7 @@ The plugin can be configured to try several different parsers in sequence, so th
 different kinds of cards and act accordingly.
 
 
-# How It Works
+## How It Works
 The card reader acts like a keyboard, and so causes keydown, keypress, and keyup events when a card is swiped.
 We take advantage of the facts that the scan will begin with a pair of unusual characters, usually `%B`, which
 is a strange thing to enter on a web page manually, and that the card reader "types" much faster than a human.
@@ -154,11 +152,11 @@ must type two % characters in quick succession (within the timeout interval).
 On a successful scan, the plugin will invoke the parser functions in sequence, passing each the raw character
 data.  If a parser recognizes the format, it should return an object that encapsulates the data of interest.
 Otherwise, the parser should return null, in which case the plugin will try the next parser.
-When a parser succeeds, the the plugin will invoke either the complete callback, passing it the parsed
-object as a parameter. If no parser succeeds, the plugin will invoke the error callback. If you're not
-interested in this case, it is not necessary to define an error callback.
+When a parser succeeds, the the plugin will invoke either the success callback, passing it the parsed
+object as a parameter. If no parser succeeds, the plugin will invoke the failure callback. If you're not
+interested in this case, it is not necessary to define a failure callback.
 
-#Special Cases
+##Special Cases
 Some card readers, like the Scriptel MagStripe, prefix the scanned data with a manufacturer-specific sequence.
 For the Scriptel, it's the string `!STCARD A `. Following this is the usual `%B` sequence.
 To accommodate these readers, a prefix character can be set in
@@ -173,7 +171,7 @@ var companyCardParser = function (rawData) {
 
 $.cardswipe({
 	parsers: ["visa", "amex", "mastercard", companyCardParser],
-	complete: goodScan,
+	success: goodScan,
 	error: badScan,
 	firstLineOnly: false,
 	prefixCharacter: '!' });
@@ -182,9 +180,9 @@ $.cardswipe({
 When a prefix character is defined, in order to enter it manually into a form field, you will have to enter it twice
 in quick succession, just as with `%`.
 
-#Changes From Previous Versions
+##Changes From Previous Versions
 
-This version is incompatible with the versions tagged 0.2.2 and prior.
+This version is incompatible with the versions tagged 0.2.1 and prior.
 
 Instead of a single parser to handle any card format, the plugin now accepts an
 array of parsers, each of which can be responsible for a single format.  In

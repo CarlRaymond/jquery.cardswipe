@@ -61,7 +61,7 @@
 	<script type="text/javascript">
 
 		// Called by plugin on a successful scan.
-		var complete = function (data) {
+		var success = function (data) {
 
 			// Is it a payment card?
 			if (data.type == "generic")
@@ -117,7 +117,7 @@
 		// time from the start of the scan to invoking your success callback.
 		$.cardswipe({
 			firstLineOnly: true,
-			complete: complete,
+			success: success,
 			parsers: ["visa", "amex", "mastercard", "generic"],
 			debug: false
 		});

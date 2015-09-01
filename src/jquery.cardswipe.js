@@ -322,7 +322,7 @@
 
 		if (result) {
 			// Scan complete. Invoke callback
-			if (settings.complete) { settings.complete.call(this, result); }
+			if (settings.success) { settings.success.call(this, result); }
 
 			// Raise success event.
 			$(document).trigger("success.cardswipe", result);
@@ -330,7 +330,7 @@
 		else
 		{
 			// All parsers failed.
-			if (settings.error) { settings.error.call(this, rawData); }
+			if (settings.failure) { settings.failure.call(this, rawData); }
 			$(document).trigger("failure.cardswipe");
 		}
 	};
@@ -375,7 +375,7 @@
 	};
 
 	// Default callback used if no other specified. Works with default parser.
-	var defaultCompleteCallback = function (cardData) {
+	var defaultSuccessCallback = function (cardData) {
 		var text = ['Line 1: ', cardData.line1, '\nLine 2: ', cardData.line2, '\nLine 3: ', cardData.line3].join('');
 		alert(text);
 	};
@@ -384,8 +384,8 @@
 	var defaults = {
 		enabled: true,
 		interdigitTimeout: 250,
-		complete: defaultCompleteCallback,
-		error: null,
+		success: defaultSuccessCallback,
+		failure: null,
 		parsers: [ "generic" ],
 		firstLineOnly: false,
 		prefixCharacter: null,
