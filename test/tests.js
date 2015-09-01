@@ -397,9 +397,10 @@ QUnit.test("success event triggered", function(assert) {
 
 	// Callback for complete event
 	var handler = function(event, data) {
+		assert.equal(event.type, "success", "Handler invoked with success event");
 		assert.equal(data.type, "generic", "Handler invoked with generic parsed data");
 		done();
-	}
+	};
 
 	var timeout = 100;
 	$.cardswipe({ enabled: true, interdigitTimeout: timeout, parsers: [ "generic"], complete: null });
@@ -415,8 +416,8 @@ QUnit.test("success event triggered", function(assert) {
 QUnit.test("failure event triggered", function(assert) {
 	var done = assert.async();
 
-	var handler = function(event, data) {
-		assert.ok(true, "Handler invoked");
+	var handler = function(event) {
+		assert.equal(event.type, "failure", "Handler invoked with failure event");
 		done();
 	};
 

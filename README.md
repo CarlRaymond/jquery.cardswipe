@@ -5,9 +5,8 @@ which can then act on the scanned data.  Scanning a card will not result in keyb
 to the underlying page, so you can scan a card without regard to which control on the page has focus.
 
 ## What It Does Not Do
-While this plugin can scan a credit card or debit card account number, it does not validate or verify that data in any way,
-and cannot by itself process a credit card transaction. The plugin simply reads the data on the card. What you do with
-it is up to you.
+While this plugin can scan a credit card or debit card account number, it does not validate or verify that data in any
+way. The plugin simply reads the data on the card. What you do with it is up to you.
 
 # Getting Started
 To use the plugin, include either `dist\jquery.cardswipe.js` or `dist\jquery.cardswipe.min.js` on your web page,
@@ -18,16 +17,17 @@ the plugin that can recognize those formats. A built-in generic parser will pars
 To scan private-use cards, like company or institutional ID cards, you'll need to create your own parser function,
 as described below.
 
+## Developing
 If you want to experiment with and further develop the plugin, you will need [https://nodejs.org/](Node.js) and NPM
-on your computer. Clone the repository, and in the root folder, run `npm install`. This will fetch the required
+on your computer. Fork and clone the repository, and in the root folder, run `npm install`. This will fetch the required
 Node packages. Then run `grunt` to execute the default build task. The command `grunt test` will execute the test
 suite, using the QUnit testing framework.
 
 # Sample Pages
-The sample page [demo-simple.html](demo-simple.html) shows a basic example of using the plugin with the builit-in parsers.
+The sample page [demo-simple.html](demo-simple.html) shows a basic example of using the plugin with the builit-in
+parsers.
 
 # Events
-
 The plugin defines four custom events which are fired during the scanning process. They are
 `scanstart.cardswipe`, `scanend.cardswipe`, `success.cardswipe`, and `failure.cardswipe`.
 You can bind listeners to these events to update your page's user interface to provide visual feedback
@@ -66,8 +66,8 @@ Immediately following the `%B` is a 13-16 digit number. On a credit card, this w
 be found online.)
 Here, the initial digit 6 indicates that this is a private-use card, and the first six digits (including the 6)
 indicate the card issuer (the business or institution).
-The subsequent digits may be all zeroes or not; that's up to the issuer.  The next field (between the first and second `^`)
-encodes the last name and first name, separated with a slash, and right-padded with spaces. The third field is an
+The subsequent digits may be all zeroes or not; that's up to the issuer.  The next field (between the first and second
+`^`) encodes the last name and first name, separated with a slash, and right-padded with spaces. The third field is an
 employee or student ID number, here left padded with zeroes.  The final `?` indicates the end of the first line on the
 card, and there are no further lines.  Some cards may contain the same data on the second line, but with a different
 encoding. Only the first line will contain alphabetic characters; the other lines will consist of only of digits and a small
@@ -76,12 +76,14 @@ number of punctuation characters.
 # Custom Card Parsers
 For a private-use employee or student ID card like the example above, you will need to create your own
 parser function to extract the various data fields you are interested in. The parser will be invoked with a
-single string argument containing the scanned characters. Typically you'll use a regular expression to recognize
-your cards. On a successful scan, your parser should return a object with a property for each field of interest.
-This will cause the plugin to invoke the successful scan event and the complete callback, passing it the object.
+single string argument containing the raw scanned characters from the card. Typically you'll use a regular expression
+to recognize your cards and extract the relevant data. On a successful scan, your parser should return an object with
+a property for each field of interest. This will cause the plugin to invoke the successful scan event and the
+`complete` callback, passing it the object.
 
 If your parser does not recognize the raw data, it should return `null`, which will cause the plugin to move
-on to the next defined parser, if any.
+on to the next defined parser, if any. If no configured parser recognizes the data, the plugin will invoke
+the 
 
 A parser function for the above private use card is shown below. 
 
@@ -162,6 +164,10 @@ until a % character is seen, where we enter the PENDING state and proceed as bef
 in the initial configuration with the `prefixCharacter` property.  For example the prefix for the Scriptel is `!`:
 
 ```
+var companyCardParser = function (rawData) {
+	/// ... process the raw data
+};
+
 $.cardswipe({
 	parsers: ["visa", "amex", "mastercard", companyCardParser],
 	complete: goodScan,
@@ -172,3 +178,17 @@ $.cardswipe({
 
 When a prefix character is defined, in order to enter it manually into a form field, you will have to enter it twice
 in quick succession, just as with `%`.
+
+#Changes From Previous Versions
+
+This version is incompatible with the versions tagged 0.2.2 and prior.
+
+Instead of a single parser to handle any card format, the plugin now accepts an
+array of parsers, each of which can be responsible for a single format.  In
+addition, there are built-in parsers for the common credit cards (at
+least in the U.S.), Visa, MasterCard, and American Express. These can
+be used by passing the string "visa", "mastercard", or "amex" in the parser
+array in the configuration.
+
+This version raises events during a card scan. See the Events section above.
+

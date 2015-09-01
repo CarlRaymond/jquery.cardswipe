@@ -124,10 +124,10 @@
 
 		// Bind event listeners to the document
 		$(document)
-			.bind("scanstart.cardswipe", scanstart)
-			.bind("scanend.cardswipe", scanend)
-			.bind("success.cardswipe", success)
-			.bind("failure.cardswipe", failure)
+			.on("scanstart.cardswipe", scanstart)
+			.on("scanend.cardswipe", scanend)
+			.on("success.cardswipe", success)
+			.on("failure.cardswipe", failure)
 		;
 	</script>
 </body>
