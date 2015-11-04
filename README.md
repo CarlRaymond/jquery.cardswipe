@@ -8,7 +8,16 @@ to the underlying page, so you can scan a card without regard to which control o
 
 Note that while this plugin can scan a credit card or debit card account number, it does not validate or verify that data in any way (except for the standard Luhn checksum on account numbers). The plugin simply reads the data on the card. What you do with it is up to you.
 
+There are built-in parsers to handle common credit cards, but the primary use case of this plugin is for
+private-use cards, like company or institutional ID cards.
+
 ## Getting Started
+Before you try the plugin, make sure your card reader does what the plugin expects. Connect your reader, and open
+`notepad` or `vi` or some other plain-text editor, and then scan a card. If the scanned data does not start with
+a `%` character followed by a letter this plugin will not be able to work with your cards and reader.  However, if
+the `%` character and a letter are present, but there is a consistent prefix ahead of it, you may be able to use
+the plugin by configuring the `prefixCharacter` property.  See an example below.
+
 To use the plugin, include either `dist\jquery.cardswipe.js` or `dist\jquery.cardswipe.min.js` on your web page,
 after including jQuery version 1.7.2 or later. 
 
@@ -22,9 +31,14 @@ If you want to experiment with and further develop the plugin, you will need [ht
 and grunt on your computer. Fork and clone the repository, and in the root folder, run `npm install`. This will
 fetch the required Node packages. Then run `grunt` to execute the default build task. The command `grunt test` will execute the test suite, using the QUnit testing framework.
 
+Note that while development is done in the NodeJS environment, the plugin itself is not really a Node module. When used
+on a web page, there is no dependency on any other Node modules or on Node itself. It's
+just a garden-variety jQuery plugin, distributed as a Node package, which is the form jQuery encourages.
+
 ## Sample Pages
 The sample page [demo-simple.html](demo-simple.html) shows a basic example of using the plugin with the builit-in
-parsers. The page [demo-events.html](demo-events.html) shows an example that binds to the events to 
+parsers. The page [demo-events.html](demo-events.html) shows an example that binds to the events to handlers that
+update the user interface as scans occur.
 
 ## Events
 The plugin defines four custom events which are fired during the scanning process. They are
@@ -34,12 +48,6 @@ about the scan. The `success.cardswipe` event handler will receive two parameter
 and the scanned data. This is the same data that is passed to the `success` callback. The callback
 is invoked first, and then the event is fired. The sample page [demo-events.html](demo-events.html) shows an example
 of using event listeners.
-
-If you have trouble using your scanner and cards with the sample pages, try scanning a card into a
-plain-text editor like `vi` or `notepad`.  If the scanned data does not start with a `%` followed by
-a letter this plugin will not be able to work with your cards and reader.  However, if the `%`
-and a letter are present, but there is a consistent prefix ahead of it, you may be able to use the plugin
-by configuring the `prefixCharacter` property.  See an example below.
 
 ## Card Formats
 Magnetic cards encode data in up to three tracks.  This expects a card that encodes data on track 1, though
