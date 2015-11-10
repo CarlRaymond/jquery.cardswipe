@@ -36,5 +36,8 @@
     "grunt-contrib-less": "^1.0.1",
     "grunt-contrib-uglify": "^0.9.1",
     "qunitjs": "^1.18.0"
+  },
+  "dependencies": {
+    "jquery": "^1.7.2"
   }
 }
