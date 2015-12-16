@@ -64,7 +64,7 @@
 		// Visa card parser.
 		visa: function (rawData) {
 			// Visa issuer number begins with 4 and may vary from 13 to 19 total digits. 16 digits is most common.
-			var pattern = new RegExp("^%B(4[0-9]{12,18})\\^([A-Z ]+)/([A-Z ]+)\\^([0-9]{2})([0-9]{2})");
+			var pattern = new RegExp("^%B(4[0-9]{12,18})\\^([A-Z ./]+)\\^([0-9]{2})([0-9]{2})");
 
 			var match = pattern.exec(rawData);
 			if (!match) return null;
@@ -76,10 +76,9 @@
 			var cardData = {
 				type: "visa",
 				account: account,
-				lastName: match[2].trim(),
-				firstName: match[3].trim(),
-				expYear: match[4],
-				expMonth: match[5]
+				name: match[2].trim(),
+				expYear: match[3],
+				expMonth: match[4]
 			};
 
 			return cardData;
@@ -88,7 +87,7 @@
 		// MasterCard parser.
 		mastercard: function (rawData) {
 			// MasterCard starts with 51-55, and is 16 digits long.
-			var pattern = new RegExp("^%B(5[1-5][0-9]{14})\\^([A-Z ]+)/([A-Z ]+)\\^([0-9]{2})([0-9]{2})");
+			var pattern = new RegExp("^%B(5[1-5][0-9]{14})\\^([A-Z ./]+)\\^([0-9]{2})([0-9]{2})");
 
 			var match = pattern.exec(rawData);
 			if (!match) return null;
@@ -100,10 +99,9 @@
 			var cardData = {
 				type: "mastercard",
 				account: account,
-				lastName: match[2],
-				firstName: match[3],
-				expYear: match[4],
-				expMonth: match[5]
+				name: match[2],
+				expYear: match[3],
+				expMonth: match[4]
 			};
 
 			return cardData;
@@ -112,7 +110,7 @@
 		// American Express parser
 		amex: function (rawData) {
 			// American Express starts with 34 or 37, and is 15 digits long.
-			var pattern = new RegExp("^%B(3[4|7][0-9]{13})\\^([A-Z ]+)/([A-Z ]+)\\^([0-9]{2})([0-9]{2})");
+			var pattern = new RegExp("^%B(3[4|7][0-9]{13})\\^([A-Z ./]+)\\^([0-9]{2})([0-9]{2})");
 
 			var match = pattern.exec(rawData);
 			if (!match) return null;
@@ -124,10 +122,9 @@
 			var cardData = {
 				type: "amex",
 				account: account,
-				lastName: match[2],
-				firstName: match[3],
-				expYear: match[4],
-				expMonth: match[5]
+				name: match[2],
+				expYear: match[3],
+				expMonth: match[4]
 			};
 
 			return cardData;
