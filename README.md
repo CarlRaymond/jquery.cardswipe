@@ -156,7 +156,7 @@ When a parser succeeds, the the plugin will invoke either the success callback, 
 object as a parameter. If no parser succeeds, the plugin will invoke the failure callback. If you're not
 interested in this case, it is not necessary to define a failure callback.
 
-##Special Cases
+## Special Cases
 Some card readers, like the Scriptel MagStripe, prefix the scanned data with a manufacturer-specific sequence.
 For the Scriptel, it's the string `!STCARD A `. Following this is the usual `%B` sequence.
 To accommodate these readers, a prefix character can be set in
@@ -180,7 +180,7 @@ $.cardswipe({
 When a prefix character is defined, in order to enter it manually into a form field, you will have to enter it twice
 in quick succession, just as with `%`.
 
-##Changes From Previous Versions
+## Changes From Previous Versions
 
 This version is incompatible with the versions tagged 0.2.1 and prior.
 
