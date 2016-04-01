@@ -32,10 +32,10 @@ function keypressFor(key) {
 // resulting from raising a keypress event, with a 0 timeout delay.
 //
 // 'seq' is an array of objects with 'chars' and 'state' properties. 'chars' is a string
-// containing the character(s) to send a keypress for, and 'state' is the corresponding
-// state that the FSM should be in after processing the character. The optional 'then'
-// property is a function that will be executed after verifying the state. It is invoked
-// with the assert object as its argument.
+// containing one or more characters to send a keypress for, and 'state' is the
+// corresponding state that the FSM should be in after processing the last character.
+// The optional 'then' property is a function that will be executed after verifying the state.
+// It is invoked with the assert object as its argument.
 //
 // The head element of the sequence is peeled off and acted upon, and then
 // the function recurses with the tail of the list.
@@ -80,10 +80,10 @@ function validateSequence(assert, seqList, lastly) {
 			head.then(assert);
 		}
 
-		done();
-
 		// Recurse on tail of sequnce
 		validateSequence(assert, tail, lastly);
+
+		done();
 	});
 }
 
