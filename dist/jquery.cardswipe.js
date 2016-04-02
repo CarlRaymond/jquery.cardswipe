@@ -1,6 +1,6 @@
-/*! jQuery.CardSwipe Magnetic Stripe Card Reader - v1.0.1 - 2015-11-04
+/*! jQuery.CardSwipe Magnetic Stripe Card Reader - v1.0.2 - 2016-04-01
 * https://github.com/CarlRaymond/jquery.cardswipe
-* Copyright (c) 2015 Carl J. Raymond; Licensed MIT */
+* Copyright (c) 2016 Carl J. Raymond; Licensed MIT */
 // A jQuery plugin to detect magnetic card swipes.  Requires a card reader that simulates a keyboard.
 // This expects a card that encodes data on track 1, though it also reads tracks 2 and 3.  Most cards
 // use track 1.  This won't recognize cards that don't use track 1, or work with a reader that
@@ -59,7 +59,7 @@
 
 				return cardData;
 			},
-		
+
 
 		// Visa card parser.
 		visa: function (rawData) {
@@ -172,7 +172,7 @@
 
 	// Array holding scanned characters
 	var scanbuffer;
-	
+
 	// Interdigit timer
 	var timerHandle = 0;
 
@@ -193,7 +193,7 @@
 				}
 
 				// Look for prefix, if defined, and jump to PREFIX.
-				if (settings.prefixCode && settings.prefixCode == e.which) {
+				if (isInPrefixCodes(e.which)) {
 					state(states.PREFIX);
 					e.preventDefault();
 					e.stopPropagation();
@@ -265,7 +265,7 @@
 			case states.PREFIX:
 
 				// If prefix character again, pass it through and return to IDLE state.
-				if (e.which == settings.prefixCode) {
+				if (isInPrefixCodes(e.which)) {
 					state(states.IDLE);
 					return;
 				}
@@ -383,6 +383,13 @@
 		alert(text);
 	};
 
+  var isInPrefixCodes = function(arg) {
+    if(!settings.prefixCodes){
+      return false;
+    }
+    return $.inArray(arg,settings.prefixCodes) != -1;
+  };
+
 	// Defaults for settings
 	var defaults = {
 		enabled: true,
@@ -437,11 +444,22 @@
 
 			// Is a prefix character defined?
 			if (settings.prefixCharacter) {
-				if (settings.prefixCharacter.length != 1)
-					throw 'prefixCharacter must be a single character';
 
-				// Convert to character code
-				settings.prefixCode = settings.prefixCharacter.charCodeAt(0);
+        // Check if prefix character is an array, if its not, convert
+        var isPrefixCharacterArray = Object.prototype.toString.call(settings.prefixCharacter) === '[object Array]';
+        if(!isPrefixCharacterArray){
+          settings.prefixCharacter = [settings.prefixCharacter];
+        }
+
+        settings.prefixCodes = [];
+        $(settings.prefixCharacter).each(function(){
+          if (this.length != 1){
+  					throw 'prefixCharacter must be a single character';
+          }
+
+          // convert to character code
+          settings.prefixCodes.push(this.charCodeAt(0));
+        });
 			}
 
 			$eventSource = $(settings.eventSource);

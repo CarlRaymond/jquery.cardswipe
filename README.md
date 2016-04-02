@@ -188,6 +188,13 @@ $.cardswipe({
 When a prefix character is defined, in order to enter it manually into a form field, you will have to enter it twice
 in quick succession, just as with `%`.
 
+More than one prefix character can be specified by using an array of characters. For example,
+```
+$.cardswipe({
+	success: goodScan,
+    prefixCharacter: [ '!', ';' ] });
+```
+
 ## Changes From Previous Versions
 
 This version is incompatible with the versions tagged 0.2.1 and prior.

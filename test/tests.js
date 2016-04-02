@@ -174,9 +174,20 @@ QUnit.test("Sequence: %B with timeout returns to IDLE", function(assert) {
 QUnit.test("Prefix settings", function(assert) {
 	$.cardswipe({ prefixCharacter: "!" });
 	var settings = $.cardswipe._settings();
-	assert.equal(settings.prefixCode, 33);
+	assert.deepEqual(settings.prefixCodes, [33]);
 });
 
+QUnit.test("Prefix allow multiple values", function(assert) {
+	$.cardswipe({ prefixCharacter: ["!",";"] });
+	var settings = $.cardswipe._settings();
+	assert.deepEqual(settings.prefixCodes, [33, 59]);
+});
+
+QUnit.test("Prefix dont accept string with more than 1 char", function(assert) {
+	assert.throws(function(){
+			$.cardswipe({ prefixCharacter: ["!","morethanonechar"] });
+	});	
+});
 
 QUnit.test("Prefix sequence: !", function(assert) {
 
@@ -188,6 +199,23 @@ QUnit.test("Prefix sequence: !", function(assert) {
 
 	var stateSeq = [
 		new Seq(prefix, states.PREFIX)
+	];
+
+	var lastly = delayValidateState(timeout, states.IDLE);
+
+	validateSequence(assert, stateSeq, lastly);
+});
+
+QUnit.test("Prefix sequence: ! or ;", function(assert) {
+
+	var timeout = 100;
+	var prefixes = ["!",";"];
+	$.cardswipe({ enable: true, prefixCharacter: prefixes, interdigitTimeout: timeout, parsers: []});
+
+	assert.stateIs(states.IDLE, "Initial state is IDLE");
+
+	var stateSeq = [
+		new Seq(";", states.PREFIX)
 	];
 
 	var lastly = delayValidateState(timeout, states.IDLE);
