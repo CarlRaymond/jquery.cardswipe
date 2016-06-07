@@ -108,7 +108,7 @@
 
     // discover parser.
 		discover: function (rawData) {
-			// MasterCard starts with 51-55, and is 16 digits long.
+			// discover starts with 6, and is 16 digits long.
 			var pattern = new RegExp("^%B(6[0-9]{15})\\^([A-Z ]+)/([A-Z ]+)\\^([0-9]{2})([0-9]{2})");
 
 			var match = pattern.exec(rawData);
