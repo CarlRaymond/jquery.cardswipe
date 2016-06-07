@@ -106,6 +106,30 @@
 			return cardData;
 		},
 
+    // discover parser.
+		discover: function (rawData) {
+			// MasterCard starts with 51-55, and is 16 digits long.
+			var pattern = new RegExp("^%B(6[0-9]{15})\\^([A-Z ]+)/([A-Z ]+)\\^([0-9]{2})([0-9]{2})");
+
+			var match = pattern.exec(rawData);
+			if (!match) return null;
+
+			var account = match[1];
+			if (!luhnChecksum(account))
+				return null;
+
+			var cardData = {
+				type: "discover",
+				account: account,
+				lastName: match[2],
+				firstName: match[3],
+				expYear: match[4],
+				expMonth: match[5]
+			};
+
+			return cardData;
+		},
+
 		// American Express parser
 		amex: function (rawData) {
 			// American Express starts with 34 or 37, and is 15 digits long.
