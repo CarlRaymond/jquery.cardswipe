@@ -1,4 +1,4 @@
-/*! jQuery.CardSwipe Magnetic Stripe Card Reader - v1.0.2 - 2016-04-01
+/*! jQuery.CardSwipe Magnetic Stripe Card Reader - v1.0.2 - 2016-06-16
 * https://github.com/CarlRaymond/jquery.cardswipe
 * Copyright (c) 2016 Carl J. Raymond; Licensed MIT */
 // A jQuery plugin to detect magnetic card swipes.  Requires a card reader that simulates a keyboard.
@@ -99,6 +99,30 @@
 
 			var cardData = {
 				type: "mastercard",
+				account: account,
+				lastName: match[2],
+				firstName: match[3],
+				expYear: match[4],
+				expMonth: match[5]
+			};
+
+			return cardData;
+		},
+
+    // discover parser.
+		discover: function (rawData) {
+			// discover starts with 6, and is 16 digits long.
+			var pattern = new RegExp("^%B(6[0-9]{15})\\^([A-Z ]+)/([A-Z ]+)\\^([0-9]{2})([0-9]{2})");
+
+			var match = pattern.exec(rawData);
+			if (!match) return null;
+
+			var account = match[1];
+			if (!luhnChecksum(account))
+				return null;
+
+			var cardData = {
+				type: "discover",
 				account: account,
 				lastName: match[2],
 				firstName: match[3],
