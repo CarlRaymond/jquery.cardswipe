@@ -186,7 +186,7 @@ QUnit.test("Prefix allow multiple values", function(assert) {
 QUnit.test("Prefix dont accept string with more than 1 char", function(assert) {
 	assert.throws(function(){
 			$.cardswipe({ prefixCharacter: ["!","morethanonechar"] });
-	});	
+	});
 });
 
 QUnit.test("Prefix sequence: !", function(assert) {
@@ -386,6 +386,24 @@ QUnit.test("Mastercard parser", function(assert) {
 	var expected = {
 		type: "mastercard",
 		account: "5555555555554444",
+		lastName: "DOE",
+		firstName: "JANE",
+		expYear: "18",
+		expMonth: "05"
+	};
+
+	assert.deepEqual(expected, result);
+});
+
+QUnit.test("Discover parser", function(assert) {
+	$.cardswipe();
+	var testData = "%B6555555555554444^DOE/JANE^1805101000000000000000503000000?";
+	var parser = $.cardswipe._builtinParsers().mastercard;
+	var result = parser(testData);
+
+	var expected = {
+		type: "discover",
+		account: "6555555555554444",
 		lastName: "DOE",
 		firstName: "JANE",
 		expYear: "18",
