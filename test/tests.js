@@ -395,15 +395,16 @@ QUnit.test("Mastercard parser", function(assert) {
 	assert.deepEqual(expected, result);
 });
 
+
 QUnit.test("Discover parser", function(assert) {
 	$.cardswipe();
-	var testData = "%B6555555555554444^DOE/JANE^1805101000000000000000503000000?";
-	var parser = $.cardswipe._builtinParsers().mastercard;
+	var testData = "%B6011111111111117^DOE/JANE^1805101000000000000000503000000?";
+	var parser = $.cardswipe._builtinParsers().discover;
 	var result = parser(testData);
 
 	var expected = {
 		type: "discover",
-		account: "6555555555554444",
+		account: "6011111111111117",
 		lastName: "DOE",
 		firstName: "JANE",
 		expYear: "18",
