@@ -6,15 +6,23 @@ web application to interface with the reader so that scanning a card will trigge
 which can then act on the scanned data.  Scanning a card will not result in keyboard events getting through
 to the underlying page, so you can scan a card without regard to which control on the page has focus.
 
-Note that while this plugin can scan a credit card or debit card account number, it does not validate or verify that data in any way (except for the standard Luhn checksum on account numbers). The plugin simply reads the data on the card. What you do with it is up to you.
+Note that while this plugin can scan a credit card or debit card account number, it does not validate or verify that
+data in any way (except for the standard Luhn checksum on account numbers). The plugin simply reads the data on the
+card. What you do with it is up to you.
 
-There are built-in parsers to handle common credit cards, but the primary use case of this plugin is for
-private-use cards, like company or institutional ID cards.
+The intended use for this plugin is NOT payment processing. The Payment Card Industry (PCI) rules on handling
+card data are very strict, and getting stricter by the day. It is very unlikely that a payment card application
+built with this plugin will meet the security requirements imposed by the industry.
+
+While there are built-in parsers to handle common credit cards, they're for convenience in testing, because
+those cards are so common, and the formats are well-known. The use for this plugin is with private-use cards,
+like company or institutional ID cards, in a low-risk application like attendance taking, or room reservation.
+You will need to create your own parser function for your cards.
 
 ## Getting Started
 Before you try the plugin, make sure your card reader does what the plugin expects. Connect your reader, and open
 `notepad` or `vi` or some other plain-text editor, and then scan a card. If the scanned data does not start with
-a `%` character followed by a letter this plugin will not be able to work with your cards and reader.  However, if
+a `%` character followed by a letter, this plugin will not be able to work with your cards and reader.  However, if
 the `%` character and a letter are present, but there is a consistent prefix ahead of it, you may be able to use
 the plugin by configuring the `prefixCharacter` property.  See an example below.
 
@@ -29,7 +37,8 @@ as described below.
 ## Developing
 If you want to experiment with and further develop the plugin, you will need [https://nodejs.org/](Node.js), NPM
 and grunt on your computer. Fork and clone the repository, and in the root folder, run `npm install`. This will
-fetch the required Node packages. Then run `grunt` to execute the default build task. The command `grunt test` will execute the test suite, using the QUnit testing framework.
+fetch the required Node packages. Then run `grunt` to execute the default build task. The command `grunt test` will
+execute the test suite, using the QUnit testing framework.
 
 Note that while development is done in the NodeJS environment, the plugin itself is not really a Node module. When used
 on a web page, there is no dependency on any other Node modules or on Node itself. It's
@@ -43,7 +52,7 @@ update the user interface as scans occur.
 ## Events
 The plugin defines four custom events which are fired during the scanning process. They are
 `scanstart.cardswipe`, `scanend.cardswipe`, `success.cardswipe`, and `failure.cardswipe`.
-You can bind listeners to these events to update your page's user interface to provide visual feedback
+You can bind listeners to these events to update your page's user interface to provide visual or audible feedback
 about the scan. The `success.cardswipe` event handler will receive two parameters, the `event` object
 and the scanned data. This is the same data that is passed to the `success` callback. The callback
 is invoked first, and then the event is fired. The sample page [demo-events.html](demo-events.html) shows an example
@@ -57,10 +66,10 @@ or work with a reader that doesn't read track 1.
 See <http://en.wikipedia.org/wiki/Magnetic_card> to understand the format of the data on a card. For details of
 the format of bank card numbers, see <http://en.wikipedia.org/wiki/Bank_card_number>.
 
-The data fileds on a line are typically separated by carets, and padded with spaces. Lines are separated by question marks,
+The data fields on a line are typically separated by carets, and padded with spaces. Lines are separated by question marks,
 and the end of a scan is indicated by a carriage return character. Note that the exact format could vary between various
 models of card reader. My own experience is limited to the reader I have. I welcome additions and corrections to this
- information.
+information.
 
 To determine the format of the card you're interested in, scan as many samples as you can into a plain text editor like
 vi or Notepad.
@@ -92,7 +101,7 @@ a property for each field of interest. This will cause the plugin to invoke the 
 
 If your parser does not recognize the raw data, it should return `null`, which will cause the plugin to move
 on to the next defined parser, if any. If no configured parser recognizes the data, the plugin will invoke
-the 
+the `error` callback, if one has been set.
 
 A parser function for the above private use card is shown below. 
 
@@ -119,7 +128,7 @@ $.cardswipe({
 	firstLineOnly: true,
 	success: successCallback,
 	parsers: [ exampleParser, "generic" ],
-	error: error,
+	error: errorCallback,
 	debug: true
 });
 ```

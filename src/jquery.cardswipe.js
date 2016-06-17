@@ -106,7 +106,7 @@
 			return cardData;
 		},
 
-    // discover parser.
+		// Discover parser.
 		discover: function (rawData) {
 			// discover starts with 6, and is 16 digits long.
 			var pattern = new RegExp("^%B(6[0-9]{15})\\^([A-Z ]+)/([A-Z ]+)\\^([0-9]{2})([0-9]{2})");
@@ -366,7 +366,7 @@
 		  var ref = settings.parsers[i];
 		  var parser;
 
-			// ref is a function or the name of a builtin parser
+		  // ref is a function or the name of a builtin parser
 		  if ($.isFunction(ref)) {
 		    parser = ref;
 		  }
