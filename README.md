@@ -22,9 +22,10 @@ You will need to create your own parser function for your cards.
 ## Getting Started
 Before you try the plugin, make sure your card reader does what the plugin expects. Connect your reader, and open
 `notepad` or `vi` or some other plain-text editor, and then scan a card. If the scanned data does not start with
-a `%` character followed by a letter, this plugin will not be able to work with your cards and reader.  However, if
-the `%` character and a letter are present, but there is a consistent prefix ahead of it, you may be able to use
-the plugin by configuring the `prefixCharacter` property.  See an example below.
+a `%` character followed by a letter, or with a `;` character followed by a number, this plugin will not be able
+to work with your cards and reader.  However, if the `%` character and a letter are present, but there is a
+consistent prefix ahead of it, you may be able to use the plugin by configuring the `prefixCharacter` property.
+See an example below.
 
 To use the plugin, include either `dist\jquery.cardswipe.js` or `dist\jquery.cardswipe.min.js` on your web page,
 after including jQuery version 1.7.2 or later. 
@@ -59,9 +60,9 @@ is invoked first, and then the event is fired. The sample page [demo-events.html
 of using event listeners.
 
 ## Card Formats
-Magnetic cards encode data in up to three tracks.  This expects a card that encodes data on track 1, though
-it also reads tracks 2 and 3.  Most cards use track 1.  This won't recognize cards that don't use track 1,
-or work with a reader that doesn't read track 1.
+Magnetic cards encode data in up to three tracks.  This plugin reads tracks 1, 2, and 3, though not all must
+be present. Some cards do not use track 1, and only have data on track 2.  Some readers do not read track 1,
+and will only provide the data on track 2, even if the card has data on track 1.
 
 See <http://en.wikipedia.org/wiki/Magnetic_card> to understand the format of the data on a card. For details of
 the format of bank card numbers, see <http://en.wikipedia.org/wiki/Bank_card_number>.
@@ -148,14 +149,18 @@ We take advantage of the facts that the scan will begin with a pair of unusual c
 is a strange thing to enter on a web page manually, and that the card reader "types" much faster than a human.
 	
 The plugin uses a simple state machine and timer.  The state machine starts in the IDLE state, waiting
-for a % character, which is the leading character on a swipe.  This changes the state to PENDING, and starts
+for a % character, which is the leading character on a swipe.  This changes the state to PENDING1, and starts
 the inter-digit timer.  It also stops event propagation, so the % character does not get sent to the control
 with focus on the web page.  Other characters are just passed through as normal.
 
-In the PENDING state, we await a keypress corresponding to a A-Z character, which is the card's format code.
+In the PENDING1 state, we await a keypress corresponding to a A-Z character, which is the card's format code.
 Credit cards and most private use cards (employee ID cards, etc.) use 'B', but other letters are possible.
 On seeing a format code, the state machine enters the READING state.  If the next character is not a valid
 format code, the state machine returns to the IDLE state, and the keypress is not supressed.
+
+With a card or reader not using track 1, data will start with a ; character, causing a trasition to state
+PENDING2. A subsequent digit will cause a transition to the READING state. A non-digit will return to the
+IDLE state.
 
 In the READING state, we just append each incoming character to the buffer, until either the interdigit timer
 times out, or we see a carriage return character, which indicates the end of the scan, at least on some card
@@ -164,7 +169,8 @@ state machine will return the scan after the line 1 ending character.  In this c
 the DISCARD state to eat all subsequent characters until the end of the scan, when it goes back to the IDLE state.
 
 Because the initial % character is supressed, if you need to manually enter a % character into a form, you
-must type two % characters in quick succession (within the timeout interval).
+must type two % characters in quick succession (within the timeout interval).  The same is true with an initial
+; character.
 
 On a successful scan, the plugin will invoke the parser functions in sequence, passing each the raw character
 data.  If a parser recognizes the format, it should return an object that encapsulates the data of interest.

@@ -1,6 +1,6 @@
-/*! jQuery.CardSwipe Magnetic Stripe Card Reader - v1.1.0 - 2016-10-12
+/*! jQuery.CardSwipe Magnetic Stripe Card Reader - v1.1.0 - 2018-02-25
 * https://github.com/CarlRaymond/jquery.cardswipe
-* Copyright (c) 2016 Carl J. Raymond; Licensed MIT */
+* Copyright (c) 2018 Carl J. Raymond; Licensed MIT */
 // A jQuery plugin to detect magnetic card swipes.  Requires a card reader that simulates a keyboard.
 // This expects a card that encodes data on track 1, though it also reads tracks 2 and 3.  Most cards
 // use track 1.  This won't recognize cards that don't use track 1, or work with a reader that
@@ -162,10 +162,10 @@
 
 
 	// State definitions:
-	var states = { IDLE: 0, PENDING: 1, READING: 2, DISCARD: 3, PREFIX: 4 };
+	var states = { IDLE: 0, PENDING1: 1, PENDING2: 2, READING: 3, DISCARD: 4, PREFIX: 5 };
 
 	// State names used when debugging.
-	var stateNames = { 0: 'IDLE', 1: 'PENDING', 2: 'READING', 3: 'DISCARD', 4: 'PREFIX' };
+	var stateNames = { 0: 'IDLE', 1: 'PENDING1', 2: 'PENDING2', 3: 'READING', 4: 'DISCARD', 5: 'PREFIX' };
 
 	// Holds current state. Update only through state function.
 	var currentState = states.IDLE;
@@ -205,18 +205,10 @@
 		if (settings.debug) { console.log(e.which + ': ' + String.fromCharCode(e.which));}
 		switch (state()) {
 
-			// IDLE: Look for '%', and jump to PENDING.
-			case states.IDLE:
-				if (e.which == 37) {
-					state(states.PENDING);
-					scanbuffer = [];
-					processCode(e.which);
-					e.preventDefault();
-					e.stopPropagation();
-					startTimer();
-				}
-
-				// Look for prefix, if defined, and jump to PREFIX.
+			// IDLE: Look for prfix characters or line 1 or line 2 start
+			// characters, and jump to PENDING1 or PENDING2.
+		 	case states.IDLE:
+				// Look for prefix characters, and jump to PREFIX.
 				if (isInPrefixCodes(e.which)) {
 					state(states.PREFIX);
 					e.preventDefault();
@@ -224,10 +216,33 @@
 					startTimer();
 				}
 
+				// Cards with (and readers reading) line 1:
+				// look for '%', and jump to PENDING1.
+				if (e.which == 37) {
+					state(states.PENDING1);
+					scanbuffer = [];
+					processCode(e.which);
+					e.preventDefault();
+					e.stopPropagation();
+					startTimer();
+				}
+
+				// Cards without (or readers ignoring) line 1:
+				// look for ';', and jump to PENDING_LINE
+				if (e.which == 59) {
+					state(states.PENDING2);
+					scanbuffer = [];
+					processCode(e.which);
+					e.preventDefault();
+					e.stopPropagation();
+					startTimer();
+				}
+
 				break;
 
-			// PENDING: Look for A-Z, then jump to READING.  Otherwise, pass the keypress through, reset and jump to IDLE.
-			case states.PENDING:
+			// PENDING1: Look for A-Z then jump to READING.
+			// Otherwise, pass the keypress through, reset and jump to IDLE.
+			case states.PENDING1:
 				// Look for format code character, A-Z. Almost always B for cards
 				// used by the general public. Some reader / OS combinations
 				// will issue lowercase characters when the caps lock key is on.
@@ -237,6 +252,27 @@
 					// Leaving focus on a form element wreaks browser-dependent
 					// havoc because of keyup and keydown events.  This is a
 					// cross-browser way to prevent trouble.
+					$("input").blur();
+
+					processCode(e.which);
+					e.preventDefault();
+					e.stopPropagation();
+					startTimer();
+				}
+				else {
+					clearTimer();
+					scanbuffer = null;
+					state(states.IDLE);
+				}
+				break;
+
+			// PENDING_LINE2: look for 0-9, then jump to READING.
+			// Otherwise, pass the keypress through, reset and jump to IDLE.
+			case states.PENDING2:
+				// Look for digit.
+				if ((e.which >= 48 && e.which <= 57)) {
+					state(states.READING);
+
 					$("input").blur();
 
 					processCode(e.which);
@@ -285,7 +321,7 @@
 				startTimer();
 				break;
 
-			// PREFIX: Eat up characters until % is seen, then jump to PENDING
+			// PREFIX: Eat up characters until % is seen, then jump to PENDING1
 			case states.PREFIX:
 
 				// If prefix character again, pass it through and return to IDLE state.
@@ -299,7 +335,13 @@
 				e.stopPropagation();
 				// Look for '%'
 				if (e.which == 37) {
-					state(states.PENDING);
+					state(states.PENDING1);
+					scanbuffer = [];
+					processCode(e.which);
+				}
+				// Look for ';'
+				if (e.which == 59) {
+					state(states.PENDING2);
 					scanbuffer = [];
 					processCode(e.which);
 				}
