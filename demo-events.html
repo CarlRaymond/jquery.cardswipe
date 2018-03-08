@@ -20,6 +20,7 @@
 		
 		<form>
 			<ul>
+				<li><label>Mr./Ms.: <input type="text" name="honorific" id="honorific" /></label></li>
 				<li><label>First name: <input type="text" name="firstName" id="firstName" /></label></li>
 				<li><label>Last name: <input type="text" name="lastName" id="lastName" /></label></li>
 				<li><label>Card type: <select name="type" id="type">
@@ -69,6 +70,7 @@
 				return;
 
 			// Copy data fields to form
+			$("#honorific").val(data.honorific);
 			$("#firstName").val(data.firstName);
 			$("#lastName").val(data.lastName);
 			$("#account").val(data.account);
