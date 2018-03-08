@@ -444,12 +444,33 @@ QUnit.test("Visa parser", function(assert) {
 		account: "4111111111111111",
 		lastName: "DOE",
 		firstName: "JANE",
+		honorific: "",
 		expYear: "18",
 		expMonth: "05"
 	};
 
 	assert.deepEqual(expected, result);
 });
+
+QUnit.test("Visa card with dot in name", function(assert) {
+	var testdata = "%B4123456789012349^PERSON/RANDOM.MR                ^18112019420244000001  199      ?;0123456789012345=18112019420244019901?";
+	
+	var parser = $.cardswipe._builtinParsers().visa;
+	var result = parser(testdata);
+
+	var expected = {
+		type: "visa",
+		account: "4123456789012349",
+		lastName: "PERSON",
+		firstName: "RANDOM",
+		honorific: "MR",
+		expYear: "18",
+		expMonth: "11"
+	};
+
+	assert.deepEqual(result, expected);
+});
+
 
 
 QUnit.test("Mastercard parser", function(assert) {
@@ -463,11 +484,31 @@ QUnit.test("Mastercard parser", function(assert) {
 		account: "5555555555554444",
 		lastName: "DOE",
 		firstName: "JANE",
+		honorific: "",
 		expYear: "18",
 		expMonth: "05"
 	};
 
-	assert.deepEqual(expected, result);
+	assert.deepEqual(result, expected);
+});
+
+QUnit.test("Mastercard with dot in name", function(assert){
+	$.cardswipe();
+	var testData = "%B5555555555554444^DOE/JANE.MS^1805101000000000000000503000000?";
+	var parser = $.cardswipe._builtinParsers().mastercard;
+	var result = parser(testData);
+
+	var expected = {
+		type: "mastercard",
+		account: "5555555555554444",
+		lastName: "DOE",
+		firstName: "JANE",
+		honorific: "MS",
+		expYear: "18",
+		expMonth: "05"
+	};
+
+	assert.deepEqual(result, expected);
 });
 
 
@@ -482,6 +523,27 @@ QUnit.test("Discover parser", function(assert) {
 		account: "6011111111111117",
 		lastName: "DOE",
 		firstName: "JANE",
+		honorific: "",
+		expYear: "18",
+		expMonth: "05"
+	};
+
+	assert.deepEqual(expected, result);
+});
+
+
+QUnit.test("Discover with dot in name", function(assert) {
+	$.cardswipe();
+	var testData = "%B6011111111111117^DOE/JANE.MS^1805101000000000000000503000000?";
+	var parser = $.cardswipe._builtinParsers().discover;
+	var result = parser(testData);
+
+	var expected = {
+		type: "discover",
+		account: "6011111111111117",
+		lastName: "DOE",
+		firstName: "JANE",
+		honorific: "MS",
 		expYear: "18",
 		expMonth: "05"
 	};
@@ -501,6 +563,27 @@ QUnit.test("American Express parser", function(assert) {
 		account: "378282246310005",
 		lastName: "DOE",
 		firstName: "JANE",
+		honorific: "",
+		expYear: "18",
+		expMonth: "05"
+	};
+
+	assert.deepEqual(expected, result);
+});
+
+
+QUnit.test("American Express with dot in name", function(assert) {
+	$.cardswipe();
+	var testData = "%B378282246310005^DOE/JANE.MS^1805101000000000000000503000000?";
+	var parser = $.cardswipe._builtinParsers().amex;
+	var result = parser(testData);
+
+	var expected = {
+		type: "amex",
+		account: "378282246310005",
+		lastName: "DOE",
+		firstName: "JANE",
+		honorific: "MS",
 		expYear: "18",
 		expMonth: "05"
 	};
